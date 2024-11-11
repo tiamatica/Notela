@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.97.0
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
+    ports:
+      - 4318:4318 # OTLP http receiver
+      
