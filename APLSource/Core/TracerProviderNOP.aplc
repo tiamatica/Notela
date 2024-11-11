@@ -11,8 +11,9 @@
       r←⎕NEW PS.TracerNOP 
     ∇
 
-    ∇ r←Shutdown
+    ∇ {r}←Shutdown
       :Implements Method ITracerProvider.Shutdown
+      r←0
     ∇
 
     ∇ r←GetContext tracer

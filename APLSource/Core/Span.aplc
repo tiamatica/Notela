@@ -1,5 +1,5 @@
 :Class Span
-:Include Tools
+    :Include Tools
 
     :Field Private Instance name
     :Field Private Instance traceId
@@ -19,6 +19,7 @@
     :Field Private Instance statusCode
     :Field Private Instance statusMessage
     :Field Private Instance tid
+    :Field Private Instance scopeSpan
 
     ∇ make context
       :Access Public
@@ -29,7 +30,7 @@
       :EndIf
       isEnded←0
      
-      (traceId parentSpanId spanId name)←context
+      (scopeSpan traceId parentSpanId spanId name)←context
      
       startTime←Now
       endTime←0
@@ -39,7 +40,6 @@
       links←⍬
       statusCode←STATUS_CODE_UNSET
       statusMessage←''
-      setTest←''
       tid←⎕TID
       ⍝
     ∇
@@ -52,30 +52,11 @@
       :EndIf
     ∇
 
-    :Property Simple EndTime,Kind,Name,ParentSpanId,SpanId,StartTime,TraceId,Tid
+    :Property Simple SpanId,TraceId,Tid ⍝EndTime,Kind,Name,ParentSpanId,SpanId,StartTime,TraceId,Tid
     :Access Public
         ∇ r←get ipa
-          r←⍎(¯1 ⎕C 1↑ipa.Name),1↓ipa.Name
-        ∇
-    :EndProperty
-
-    :Property Simple ToObject
-    :Access Public
-        ∇ r←get ipa;s
-          r←(⊃⎕RSI).⎕NS''
-          r.name←name
-          r.traceId←traceId
-          r.parentSpanId←parentSpanId
-          r.spanId←spanId
-          r.startTimeUnixNano←timeUnixNano startTime
-          r.endTimeUnixNano←timeUnixNano endTime
-          r.kind←kind
-          r.attributes←toKeyValue/attributes
-          r.events←events
-          r.links←links
-          r.status←⎕NS''
-          r.status.code←statusCode
-          r.status.message←statusMessage
+⍝          r←⍎(¯1 ⎕C 1↑ipa.Name),1↓ipa.Name
+          r←('SpanId' 'TraceId' 'Tid'⍳⊂ipa.Name)⊃spanId traceId tid
         ∇
     :EndProperty
 
@@ -186,7 +167,7 @@
       'Span already ended'⎕SIGNAL isEnded/800
     ∇
 
-    ∇ End
+    ∇ End;r
 ⍝   Marks the end of Span execution.
 ⍝   Call to End of a Span MUST not have any effects on child spans.
 ⍝   Those may still be running and can be ended later
@@ -194,6 +175,24 @@
       CheckOpen
       endTime←Now
       isEnded←1
+     
+      r←scopeSpan.⎕NS''
+      r.name←name
+      r.traceId←traceId
+      r.parentSpanId←parentSpanId
+      r.spanId←spanId
+      r.startTimeUnixNano←timeUnixNano startTime
+      r.endTimeUnixNano←timeUnixNano endTime
+      r.kind←kind
+      r.attributes←toKeyValue/attributes
+      r.events←events
+      r.links←links
+      r.status←r.⎕NS''
+      r.status.code←statusCode
+      r.status.message←statusMessage
+      
+      scopeSpan.spans,←r
+
       ##.End ⎕THIS
     ∇
 
