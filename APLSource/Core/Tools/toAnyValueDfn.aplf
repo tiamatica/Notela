@@ -1,0 +1,20 @@
+ toAnyValueDfn←{
+     r←⎕NS''
+     (2=⍴⍴⍵)∧(2=⊃⌽⍴⍵):r{
+         ⍺.kvlistValue←⎕NS''
+         ⍺.kvlistValue.values←⎕NS¨(≢⍵)⍴⊂''
+         ⍺.kvlistValue.values.key←⊣/⍵
+         ⍺.kvlistValue.values.value←toAnyValue¨⊢/⍵
+         ⍺
+     }⍵
+     (326=⎕DR ⍵)∧(1=⍴⍴⍵):r{
+         ⍺.arrayValue←⎕NS''
+         ⍺.arrayValue.values←toAnyValue¨⍵
+         ⍺
+     }⍵
+     (83=⎕DR ⍵)∧(1=⍴⍴⍵):r⊣r.bytesValue←⍵ ⍝ this is broken
+     (⊂⍵)∊⊂¨'true' 'false':r⊣r.boolValue←⍵
+     1 3∊⍨10|⎕DR ⍵:r⊣r.intValue←⍵
+     0=10|⎕DR ⍵:r⊣r.stringValue←⍵
+     5=10|⎕DR ⍵:r⊣r.doubleValue←⍵
+ }
