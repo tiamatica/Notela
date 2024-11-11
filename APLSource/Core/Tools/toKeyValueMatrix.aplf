@@ -1,6 +1,7 @@
  toKeyValueMatrix←{
      2=⍴⍴⍵:⍵               ⍝ If matrix, keep unchanged
-     (∧/2=≢¨⍵)∧(2≠≡⍵):↑⍵   ⍝ If pairs, mix gil
+     0∊⍴⍵:0 2⍴⊂''          ⍝ If empty, return empty matrix
+     (∧/2=≢¨⍵)∧(2≠≡⍵):↑⍵   ⍝ If pairs, mix
      0=2|≢⍵:((≢⍵)÷2)2⍴⍵    ⍝ If even, reshape
      'Invalid key/value parameter'⎕SIGNAL 11
  }
