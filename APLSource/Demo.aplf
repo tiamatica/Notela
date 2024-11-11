@@ -4,6 +4,7 @@
  app←'Demo' '0.1.2'
  cfg←⎕NEW notela.Configuration app
  cfg.ExportInterval←10000
+ cfg.BatchSize←2
  notela.Start cfg
 
  tracer←notela.GetTracer app
@@ -37,6 +38,7 @@
 
  span2←tracer.StartActiveSpan'WriteDB'
 ⍝ write back to DB
+ ⎕DL .01
  span2.End
 
 ⍝ done with work, wrap up and send back response
