@@ -1,0 +1,21 @@
+:Interface ITracerProvider
+
+    ∇ r←GetTracer arg             ⍝ Returns tracer instance
+    ∇
+
+    ∇ r←Shutdown                  ⍝ Shut down TracerProvider
+    ∇
+
+    ∇ r←GetContext tracer         ⍝ Return active context
+    ∇
+
+    ∇ span←GetActiveSpan tracer
+    ∇
+
+    ∇ span←{context}StartSpan args
+    ∇
+
+    ∇ span←{context}StartActiveSpan args
+    ∇
+
+:EndInterface

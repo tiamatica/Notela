@@ -1,0 +1,10 @@
+:Interface ILoggerProvider
+    ∇ r←GetLogger arg             ⍝ Returns logger instance
+    ∇
+
+    ∇ r←Shutdown                  ⍝ Shut down LoggerProvider
+    ∇
+
+    ∇ Log args              ⍝ Create log entry and return a log instance
+    ∇
+:EndInterface

@@ -1,0 +1,49 @@
+ Demo;app;cfg;logger;meter;notela;r;span;span2;tracer;var
+ notela←Tests.SetupCore
+⍝ Configure telemetry at startup of application
+ app←'Demo' '0.1.2'
+ cfg←⎕NEW notela.Configuration app
+ cfg.ExportInterval←10000
+ notela.Start cfg
+
+ tracer←notela.GetTracer app
+ logger←notela.GetLogger app
+ meter←notela.GetMeter app
+
+ meter.CreateObservableGauge'workspace.used' 'WS used' 'GetMemStats'
+
+ logger.Log'Starting application'
+
+ span←tracer.StartActiveSpan'Initialisation'
+⍝ initialise application
+ span.End
+
+⍝ Service handler here ↓↓↓
+⍝ Create a span around a unit of work
+ span←tracer.StartActiveSpan'SomeWork'
+ logger.Log'do some work here'
+
+ span2←tracer.StartActiveSpan'ReadDB'
+⍝ read data from DB
+ 15 logger.Log'Slow response from DB'
+ span2.End
+
+ span2←tracer.StartActiveSpan'RunCalcs'
+⍝ run business logic
+ var←1000000⍴1.2J2
+ 18 logger.Log'Complex numbers are complex'
+ ⎕EX'var'
+ span2.End
+
+ span2←tracer.StartActiveSpan'WriteDB'
+⍝ write back to DB
+ span2.End
+
+⍝ done with work, wrap up and send back response
+ span.End
+⍝ Service handler ↑↑↑
+
+ logger.Log'Shutting down'
+
+⍝ shut down telemetry gracefully
+ r←notela.Stop

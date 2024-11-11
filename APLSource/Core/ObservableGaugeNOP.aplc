@@ -1,0 +1,15 @@
+:Class ObservableGaugeNOP
+    ∇ make 
+      :Access Public
+      :Implements Constructor
+    ∇
+
+    ∇ WithCallback arg
+      :Access Public
+    ∇
+
+    ∇ r←Collect
+      :Access Public
+    ∇
+    ⍝
+:EndClass

@@ -1,0 +1,4 @@
+ r←GetTracer app
+⍝ Get tracer instance for app
+⍝ app: name [version]
+ r←##.GetTracer app

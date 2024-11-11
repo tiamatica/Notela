@@ -1,0 +1,124 @@
+:Class LoggerProvider: ILoggerProvider
+    :Include Tools
+    ⍝ Logger Provider initialization
+    :Field Private Instance _cfg
+    :Field Private Instance _logsBuffer
+    :Field Private Instance _isShuttingDown
+
+    ∇ make cfg
+      :Access Public
+      :Implements Constructor
+      ⎕RL←⍬ 1
+      PS←(⊃⊃⎕CLASS ⎕THIS).##
+      :If 9.2=⎕NC⊂'cfg'
+      :AndIf PS.API.Configuration≡⊃⊃⎕CLASS cfg
+          _cfg←cfg
+      :Else
+          'Constructor requires a Configuration instance'⎕SIGNAL 11
+      :EndIf
+      _logsBuffer←⍬
+      _isShuttingDown←0
+    ∇
+
+    ∇ r←GetLogger args;ind;name;version;scopeName;scopeVersion
+      :Implements Method ILoggerProvider.GetLogger
+      ⍝ name = ScopeName [ScopeVersion]
+      scopeName scopeVersion←2↑(⊆args),⊂_cfg.ServiceVersion
+      r←⎕NEW PS.Logger(scopeName scopeVersion)
+    ∇
+
+    ∇ Log args;attrs;body;log;scope;severity;span;spanId;traceId;tracer
+      :Implements Method ILoggerProvider.Log
+      scope body severity attrs←4↑args,(≢args)↓('' '')''(PS.API.LogSeverity.INFO'')(0 2⍴⊂'')
+      severity←2↑severity,⊂''
+      log←(⊃⎕RSI).⎕NS''
+      log.scope←scope
+      log.spanId←''
+      log.traceId←''
+      log.body←ToAnyValue body
+      log.timeUnixNano←timeUnixNano 0
+      log.attributes←toKeyValue/attrs
+      log.severityNumber←1⊃severity
+      log.severityText←2⊃severity
+     
+      tracer←PS.GetTracer''
+      span←tracer.GetActiveSpan
+      :If 0<≢span
+          log.(traceId spanId)←span.(TraceId SpanId)
+      :EndIf
+      :Hold '_logsBuffer'
+          _logsBuffer,←log
+      :EndHold
+      0 ProcessLogs,log
+    ∇
+
+    ∇ {r}←flush ProcessLogs logs
+      ⍝ Recieve logs for further processing such as batching, sampling and/or enrichment
+      ⍝ Token value is one of:
+      ⍝  ¯1 to stop process loop
+      ⍝   0 to force flush
+      ⍝   vector of span objects to process
+      :If flush∨~_isShuttingDown
+      :AndIf (flush∧0<≢_logsBuffer)∨(_cfg.BatchSize≤≢_logsBuffer)
+          ExportLogs&_logsBuffer
+          _logsBuffer←⍬
+      :EndIf
+      r←0
+    ∇
+
+    ∇ {r}←ExportLogs logs;t;rl;resource;scopeLog;logR;attr;exporter;callspace;fn
+⍝ Export to OTEL backend or log file
+      :Trap _cfg.Debug↓0
+          t←⎕NS''
+          t.resourceLogs←,rl←⎕NS''
+          rl.resource←resource←⎕NS''
+          resource.attributes←toKeyValue/2 2⍴'service.name'_cfg.ServiceName'service.version'_cfg.ServiceVersion
+          rl.scopeLogs←logs.scope{
+              scopeLog←⎕NS''
+              scopeLog.scope←⎕NS''
+              scopeLog.scope.(name version)←⊃⍺
+              scopeLog.scope.attributes←⍬
+              scopeLog.logRecords←,⍵
+              scopeLog
+          }⌸logs
+          :If 0=≢_cfg.Exporters
+              PostHttpJson t
+          :EndIf
+          :For exporter :In _cfg.Exporters
+              callspace fn←exporter
+              (callspace⍎fn)t
+          :EndFor
+      :Else
+          LogError ⎕EN(↑⎕DM)
+      :EndTrap
+    ⍝
+    ∇
+
+    ∇ PostHttpJson log;json;cmd;res;ts
+      json←⎕JSON log
+      cmd←PS.HttpCommand.New'POST'_cfg.OtelHttpUrlLogs
+      cmd.ContentType←'application/json'
+      cmd.Params←json
+      res←cmd.Run
+      LogError(200≠⊃res.HttpStatus)'Failed posting log'
+    ∇
+
+    ∇ LogError msg
+      :If _cfg.Debug∧0≠⊃msg
+          ⎕←msg
+      :EndIf
+    ∇
+
+    ∇ {r}←Shutdown
+      :Implements Method ILoggerProvider.Shutdown
+      _isShuttingDown←1
+      r←1 ProcessLogs _logsBuffer
+    ∇
+
+    ∇ {r}←ForceFlush
+      :Access Public Instance
+      r←1 ProcessLogs _logsBuffer
+    ∇
+
+
+:EndClass

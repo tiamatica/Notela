@@ -1,0 +1,221 @@
+:Class TracerProvider: ITracerProvider
+    :Include Tools
+⍝ Tracer Provider initialization
+
+    :Field Private Instance _activeSpans
+    :Field Private Instance _cfg
+    :Field Private Instance _spans
+    :Field Private Instance _spanBuffer
+    :Field Private Instance _threads
+
+    ∇ make cfg
+      :Access Public
+      :Implements Constructor
+      ⎕RL←⍬ 1
+      PS←(⊃⊃⎕CLASS ⎕THIS).##
+      :If 9.2=⎕NC⊂'cfg'
+      :AndIf PS.API.Configuration≡⊃⊃⎕CLASS cfg
+          _cfg←cfg
+      :Else
+          'Constructor requires a Configuration instance'⎕SIGNAL 11
+      :EndIf
+      _activeSpans←⍬
+      _spans←⍬
+      _spanBuffer←⍬
+      _contexts←⍬
+      _threads←⍬
+      _isShuttingDown←0
+      ⍝
+    ∇
+
+    ∇ r←GetContext tracer;last
+      :Implements Method ITracerProvider.GetContext
+      ⍝ Returns Context
+      :If 0=≢_activeSpans
+          r←⍬
+      :Else
+          last←GetActiveSpan tracer
+          r←last.Context
+      :EndIf
+    ∇
+
+    ∇ r←GetActiveSpan tracer;mask;ind;threadSpans
+      :Implements Method ITracerProvider.GetActiveSpan
+  ⍝ Gets the span from the current context, if one exists.
+      threadSpans←{0∊⍴⍵:⍬ ⋄ (⍵.Tid∊⎕TID)/⍵}_activeSpans
+      :If 0∊⍴threadSpans
+          r←⍬
+      :Else
+          r←⊃⌽threadSpans
+      :EndIf
+    ∇
+
+⍝ Start span without setting it on context.
+  ⍝ does NOT modify the current Context.
+  ⍝ Create span and set start time
+  ⍝There MUST NOT be any API
+  ⍝for creating a Span other than with a Tracer.
+    ∇ span←{context}StartSpan args;parent;ind;traceId;parentId;spanId;tracer;name
+      :Implements Method ITracerProvider.StartSpan
+ ⍝ Create span with name in context.
+ ⍝ If no context provided, create span in active span.
+ ⍝ If no active span, create new root span.
+ ⍝ Does not set the span as active (consider using StartActiveSpan for that).
+      tracer name←2↑args
+     
+      :If 2=⎕NC'context'
+      :AndIf 2=⍴⍴context
+          ind←(⎕C context[;1])⍳⊂'traceparent'
+      :AndIf ind≤≢context
+          (traceId parentId)←¯1↓1↓'-'(≠⊆⊢)⊃context[ind;2]
+      :ElseIf ~0∊⍴parent←GetActiveSpan tracer
+          traceId←parent.TraceId
+          parentId←parent.SpanId
+      :Else
+          traceId←RandomHex 32
+          parentId←⊂'null'
+      :EndIf
+      spanId←RandomHex 16
+     
+      span←⎕NEW PS.Span(traceId parentId spanId name)
+      span.scope←tracer.Scope
+      _spans,←span
+    ∇
+
+    ∇ span←{context}StartActiveSpan args;currentSpan;row;list
+      :Implements Method ITracerProvider.StartActiveSpan
+ ⍝ Create span with name in active context.
+ ⍝ If no active context, create new root span.
+ ⍝ Sets the span as active.
+      :If 0=⎕NC'context'
+          span←StartSpan args
+      :Else
+          span←context StartSpan args
+      :EndIf
+      :Hold '_activeSpans'
+          _activeSpans,←span
+      :EndHold
+    ∇
+
+    ∇ End span;c;tracespans
+      :Access Public Instance
+    ⍝ End span and any child spans it may have if not already ended
+    ⍝ If span is a root span then send it and its child spans for further processing
+    ⍝   children←(_spans.ParentSpanId∊⊂span.SpanId)/_spans
+    ⍝   :If 0<≢children
+    ⍝       children/⍨←children.EndTime∊0
+    ⍝   :AndIf 0<≢children
+    ⍝       children.End
+    ⍝   :EndIf
+    ⍝   parents←(_spans.SpanId∊⊂span.ParentSpanId)/_spans
+    ⍝   :If 0=≢parents                  ⍝ orphan, is a root span
+    ⍝       tracespans←(_spans.TraceId∊⊂span.TraceId)/_spans
+    ⍝       _spans~←tracespans          ⍝ remove from open spans
+    ⍝       0 ProcessSpans tracespans     ⍝ move ended spans for further processing
+    ⍝   :EndIf
+      0 ProcessSpans,span
+      :Hold '_activeSpans'
+          _activeSpans~←span
+      :EndHold
+    ∇
+
+    ∇ {r}←flush ProcessSpans spans
+ ⍝ Recieve spans for further processing such as batching, sampling and/or enrichment
+ ⍝ Token value is one of:
+ ⍝  ¯1 to stop process loop
+ ⍝   0 to force flush
+ ⍝   vector of span objects to process
+      :If flush∨~_isShuttingDown
+    ⍝ Sampling of spans?
+          _spanBuffer,←spans
+    ⍝ Export?
+          _threads←(_threads∊⎕TNUMS)/_threads
+          :If (flush∧0<≢_spanBuffer)∨(_cfg.BatchSize≤≢_spanBuffer)
+              _threads,←ExportSpans&_spanBuffer
+              _spanBuffer←⍬
+          :EndIf
+          :If flush
+              ⎕TSYNC _threads
+          :EndIf
+      :EndIf
+      r←0
+    ∇
+
+    ∇ ExportSpans spans;t;resource;scopeSpan;rs;exporter;callspace;fn
+⍝ Export to OTEL backend or log file
+      :Trap _cfg.Debug↓0
+          t←⎕NS''
+          rs←⎕NS''
+          t.resourceSpans←,rs
+          rs.resource←resource←⎕NS''
+          resource.attributes←toKeyValue/2 2⍴'service.name'_cfg.ServiceName'service.version'_cfg.ServiceVersion
+          rs.scopeSpans←spans.scope{
+              scopeSpan←⎕NS''
+              scopeSpan.scope←⎕NS''
+              scopeSpan.scope.(name version)←⊃⍺
+              scopeSpan.spans←⍵.ToObject
+              scopeSpan
+          }⌸spans
+          :If 0=≢_cfg.Exporters
+              PostHttpJson t
+          :EndIf
+          :For exporter :In _cfg.Exporters
+              callspace fn←exporter
+              (callspace⍎fn)t
+          :EndFor
+      :Else
+          LogError ⎕EN(↑⎕DM)
+      :EndTrap
+    ⍝
+    ∇
+
+    ∇ HousekeepThreads;leftover
+      :If ~0∊⍴_activeSpans
+      :AndIf ~0∊⍴leftover←_activeSpans/⍨~⎕TNUMS∊⍨{⍵.Tid}_activeSpans
+          :Hold '_activeSpans'
+              _activeSpans~←leftover
+          :EndHold
+      :EndIf
+    ∇
+
+    ∇ PostHttpJson trace;json;cmd;res;ts
+      json←⎕JSON trace
+      cmd←PS.HttpCommand.New'POST'_cfg.OtelHttpUrlTraces
+      cmd.ContentType←'application/json'
+      cmd.Params←json
+      res←cmd.Run
+      LogError(200≠⊃res.HttpStatus)'Failed posting trace'
+    ∇
+
+    ∇ LogError msg
+      :If _cfg.Debug∧0≠⊃msg
+          ⎕←msg
+      :EndIf
+    ∇
+
+    ∇ r←GetTracer args;ind;name;version;scopeName;scopeVersion
+      :Implements Method ITracerProvider.GetTracer
+      ⍝ name = ScopeName [ScopeVersion]
+      scopeName scopeVersion←2↑(⊆args),⊂_cfg.ServiceVersion
+      r←⎕NEW PS.Tracer(scopeName scopeVersion)
+    ∇
+
+    ∇ r←Shutdown
+      :Implements Method ITracerProvider.Shutdown
+      r←0
+      _isShuttingDown←1
+      r←1 ProcessSpans ⍬
+    ∇
+
+    ∇ {r}←ForceFlush
+      :Access Public Instance
+      r←1 ProcessSpans ⍬
+    ∇
+
+    ∇ r←RandomHex size
+      :Access Private Shared
+      r←'0123456789ABCDEF'[size(?⍴)16]
+    ∇
+
+
+:EndClass

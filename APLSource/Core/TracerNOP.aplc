@@ -1,0 +1,29 @@
+:Class TracerNOP: ITracer
+
+    ∇ make
+      :Access Public
+      :Implements Constructor 
+    ∇
+
+    ∇ r←GetContext
+      :Implements Method ITracer.GetContext
+      r←##.GetContext ⎕THIS
+    ∇
+
+    ∇ r←GetActiveSpan
+      :Implements Method ITracer.GetActiveSpan
+      r←##.GetActiveSpan ⎕THIS
+    ∇
+
+    ∇ span←{context}StartSpan name
+      :Implements Method ITracer.StartSpan
+      span←##.StartSpan ⎕THIS name
+    ∇
+
+    ∇ span←{context}StartActiveSpan name;currentSpan;row;list
+      :Implements Method ITracer.StartActiveSpan
+      span←##.StartActiveSpan ⎕THIS name
+    ∇
+
+:EndClass
+

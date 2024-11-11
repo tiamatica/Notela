@@ -1,0 +1,19 @@
+:Class CounterNOP
+    ∇ make arg
+      :Access Public
+      :Implements Constructor
+      ⍝
+    ∇
+
+    ∇ Add arg;attrs;value
+      :Access Public
+    ∇
+
+    ∇ r←Collect;sums
+      :Access Public
+      r←⍬
+    ∇
+
+⍝
+:EndClass
+

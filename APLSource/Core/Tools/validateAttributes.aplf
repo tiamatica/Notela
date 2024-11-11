@@ -1,0 +1,6 @@
+ validateAttributes←{
+     (⊢≢∪)⍵[;1]:'Attribute keys must be unique'⎕SIGNAL 11
+     valid←0 1 3 5∊⍨10|⎕DR¨⍵[;2]
+     valid∨←⍵[;2]∊⊂¨'true' 'false'
+     ∨/~valid:'Attribute values must be string, boolean or numeric'⎕SIGNAL 11
+ }

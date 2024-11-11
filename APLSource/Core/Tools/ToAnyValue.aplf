@@ -1,0 +1,22 @@
+ r←ToAnyValue arg
+
+ r←⎕NS''
+ :If (2=⍴⍴arg)∧(2=⊃⌽⍴arg)
+     r.kvlistValue←⎕NS''
+     r.kvlistValue.values←⎕NS¨(≢arg)⍴⊂''
+     r.kvlistValue.values.key←⊣/arg
+     r.kvlistValue.values.value←ToAnyValue¨⊢/arg
+ :ElseIf (326=⎕DR arg)∧(1=⍴⍴arg)
+     r.arrayValue←⎕NS''
+     r.arrayValue.values←ToAnyValue¨arg
+ :ElseIf (83=⎕DR arg)∧(1=⍴⍴arg)
+     r.bytesValue←arg ⍝ this is broken
+ :ElseIf (⊂arg)∊⊂¨'true' 'false'
+     r.boolValue←arg
+ :ElseIf 1 3∊⍨10|⎕DR arg
+     r.intValue←arg
+ :ElseIf 0=10|⎕DR arg
+     r.stringValue←arg
+ :ElseIf 5=10|⎕DR arg
+     r.doubleValue←arg
+ :EndIf

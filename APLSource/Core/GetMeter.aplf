@@ -1,0 +1,5 @@
+ r←GetMeter arg
+ :If 0=⎕NC'∆meterProvider'
+     ∆meterProvider←⎕NEW MeterProviderNOP
+ :EndIf
+ r←∆meterProvider.GetMeter arg

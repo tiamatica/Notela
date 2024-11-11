@@ -1,0 +1,13 @@
+:Class LoggerNOP
+
+    ∇ make0
+      :Access Public
+      :Implements Constructor
+    ∇
+
+    ∇ {severity}Log body
+      :Access Public Instance
+      ##.Log ⎕THIS body
+    ∇
+
+:EndClass

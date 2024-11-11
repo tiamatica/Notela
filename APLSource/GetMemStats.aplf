@@ -1,0 +1,2 @@
+r←GetMemStats
+r←2000⌶1

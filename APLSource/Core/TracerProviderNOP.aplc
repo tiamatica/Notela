@@ -1,0 +1,38 @@
+:Class TracerProviderNOP: ITracerProvider
+
+    ∇ make
+      :Access Public Instance
+      :Implements Constructor
+      PS←(⊃⊃⎕CLASS ⎕THIS).##
+    ∇
+
+    ∇ r←GetTracer args
+      :Implements Method ITracerProvider.GetTracer
+      r←⎕NEW PS.TracerNOP 
+    ∇
+
+    ∇ r←Shutdown
+      :Implements Method ITracerProvider.Shutdown
+    ∇
+
+    ∇ r←GetContext tracer
+      :Implements Method ITracerProvider.GetContext
+      r←⍬
+    ∇
+
+    ∇ r←GetActiveSpan tracer
+      :Implements Method ITracerProvider.GetActiveSpan
+      r←⍬
+    ∇
+
+    ∇ r←{context}StartSpan args
+      :Implements Method ITracerProvider.StartSpan
+      r←⎕NEW PS.SpanNOP
+    ∇
+
+    ∇ r←{context}StartActiveSpan args
+      :Implements Method ITracerProvider.StartActiveSpan 
+      r←StartSpan args
+    ∇
+
+:EndClass

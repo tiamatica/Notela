@@ -1,0 +1,4 @@
+ Start cfg
+⍝ Start OpenTelemetry SDK using configuration cfg
+ ##.Start cfg
+⍝

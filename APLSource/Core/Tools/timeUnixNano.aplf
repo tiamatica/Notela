@@ -1,0 +1,4 @@
+ timeUnixNano←{
+     ts←{0≡⍵:⊃¯1 ⎕DT'Z' ⋄ ⍵}⍵
+     ⊂(⍕20 ⎕DT⊂ts),,'K6ZI9'⎕FMT⊃⌽ts
+ }

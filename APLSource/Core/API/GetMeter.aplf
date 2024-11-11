@@ -1,0 +1,4 @@
+ r←GetMeter app
+⍝ Get logger instance for app
+⍝ app: name [version]
+ r←##.GetMeter app

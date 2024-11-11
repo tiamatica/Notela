@@ -1,0 +1,13 @@
+:Interface ITracer
+    ∇ r←GetContext
+    ∇
+
+    ∇ r←GetActiveSpan
+    ∇
+
+    ∇ span←{context}StartSpan name
+    ∇
+
+    ∇ span←{context}StartActiveSpan name
+    ∇
+:EndInterface

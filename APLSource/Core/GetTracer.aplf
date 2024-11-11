@@ -1,0 +1,5 @@
+ r←GetTracer arg
+ :If 0=⎕NC'∆tracerProvider'
+     ∆tracerProvider←⎕NEW TracerProviderNOP
+ :EndIf
+ r←∆tracerProvider.GetTracer arg

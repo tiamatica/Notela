@@ -1,0 +1,174 @@
+:Class Configuration
+⍝ Configuration of OpenTelemetry SDK
+
+    :Field Private Instance _batchSize
+    :Field Private Instance _exportInterval
+    :Field Private Instance _otelHttpUrl
+    :Field Private Instance _otelHttpUrlLogs
+    :Field Private Instance _otelHttpUrlMetrics
+    :Field Private Instance _otelHttpUrlTraces
+    :Field Private Instance _serviceName
+    :Field Private Instance _serviceVersion
+    :Field Private Instance _debug
+    :Field Private Instance _logLevel
+    :Field Private Instance _exporters
+
+    ∇ make0
+      :Access Public
+      :Implements Constructor
+      init
+    ∇
+
+    ∇ make1(serviceName)
+      :Access Public
+      :Implements Constructor
+      init
+      ServiceName←serviceName
+    ∇
+
+    ∇ make2(serviceName serviceVersion)
+      :Access Public
+      :Implements Constructor
+      init
+      ServiceName←serviceName
+      ServiceVersion←serviceVersion
+    ∇
+
+    ∇ init;getEnv
+      getEnv←{
+          ⍺←''
+          v←2 ⎕NQ'.' 'GetEnvironment'⍵
+          0<≢v:v
+          ⍺
+      }
+      _batchSize←1
+      _debug←1
+      _exportInterval←120000
+      _otelHttpUrl←'http://localhost:4318/'getEnv'OTEL_EXPORTER_OTLP_ENDPOINT'
+      _otelHttpUrlLogs←(_otelHttpUrl,'v1/logs')getEnv'OTEL_EXPORTER_OTLP_LOGS_ENDPOINT'
+      _otelHttpUrlMetrics←(_otelHttpUrl,'v1/metrics')getEnv'OTEL_EXPORTER_OTLP_METRICS_ENDPOINT'
+      _otelHttpUrlTraces←(_otelHttpUrl,'v1/traces')getEnv'OTEL_EXPORTER_OTLP_TRACES_ENDPOINT'
+      _serviceName←getEnv'OTEL_SERVICE_NAME'
+      _serviceVersion←getEnv'OTEL_SERVICE_VERSION'
+      _logLevel←'info' getEnv'OTEL_LOG_LEVEL'
+      _exporters←⍬
+    ∇
+
+    :Property Simple BatchSize
+    :Access Public
+        ∇ r←get
+          r←_batchSize
+        ∇
+        ∇ set ipa
+    ⍝TODO: Validate BatchSize
+          _batchSize←ipa.NewValue
+        ∇
+    :EndProperty
+
+    :Property Simple Debug
+    :Access Public
+        ∇ r←get
+          r←_debug
+        ∇
+        ∇ set ipa                         
+        ⎕SIGNAL (~ipa.NewValue∊0 1)/'Debug must be a boolean flag (0|1)'
+          _debug←ipa.NewValue
+        ∇
+    :EndProperty
+
+    :Property Simple ExportInterval
+    :Access Public
+        ∇ r←get
+          r←_exportInterval
+        ∇
+        ∇ set ipa
+    ⍝TODO: Validate
+          _exportInterval←ipa.NewValue
+        ∇
+    :EndProperty
+
+    :Property Simple OtelHttpUrl
+    :Access Public
+        ∇ r←get
+          r←_otelHttpUrl
+        ∇
+        ∇ set ipa
+    ⍝TODO: Validate OtelHttpUrl
+          _otelHttpUrl←ipa.NewValue
+        ∇
+    :EndProperty
+
+    :Property Simple OtelHttpUrlLogs
+    :Access Public
+        ∇ r←get
+          r←_otelHttpUrlLogs
+        ∇
+        ∇ set ipa
+    ⍝TODO: Validate OtelHttpUrlLogs
+          _otelHttpUrlLogs←ipa.NewValue
+        ∇
+    :EndProperty
+
+    :Property Simple OtelHttpUrlMetrics
+    :Access Public
+        ∇ r←get
+          r←_otelHttpUrlMetrics
+        ∇
+        ∇ set ipa
+    ⍝TODO: Validate OtelHttpUrlMetrics
+          _otelHttpUrlMetrics←ipa.NewValue
+        ∇
+    :EndProperty
+
+    :Property Simple OtelHttpUrlTraces
+    :Access Public
+        ∇ r←get
+          r←_otelHttpUrlTraces
+        ∇
+        ∇ set ipa
+    ⍝TODO: Validate OtelHttpUrlTraces
+          _otelHttpUrlTraces←ipa.NewValue
+        ∇
+    :EndProperty
+
+    :Property Simple ServiceName
+    :Access Public
+        ∇ r←get
+          r←_serviceName
+        ∇
+        ∇ set ipa
+    ⍝TODO: Validate ServiceName
+          _serviceName←ipa.NewValue
+        ∇
+    :EndProperty
+
+    :Property Simple ServiceVersion
+    :Access Public
+        ∇ r←get
+          r←_serviceVersion
+        ∇
+        ∇ set ipa
+    ⍝TODO: Validate
+          _serviceVersion←ipa.NewValue
+        ∇
+    :EndProperty
+
+    :Property Simple Exporters
+    :Access Public
+        ∇ r←get
+          r←_exporters
+        ∇
+    :EndProperty
+
+    ∇ WithExporter arg;callspace
+      :Access Public
+      :If 0=10|⎕DR arg
+          callspace←⊃⎕RSI
+      :AndIf 3=callspace.⎕NC arg
+          _exporters,←⊂callspace arg
+      :Else
+          'Argument must be an existing APL function'⎕SIGNAL 11
+      :EndIf
+    ∇
+
+:EndClass

@@ -1,0 +1,3 @@
+ r←SetupCore
+ #.Notela.Core.HttpCommand←#.Notela.HttpCommand
+ r←#.Notela.Core.API

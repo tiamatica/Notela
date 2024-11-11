@@ -1,0 +1,15 @@
+ {r}←Stop
+ ⍝ Stop and cleanup
+ r←0
+ :If 0≠⎕NC'∆loggerProvider'
+     ∆loggerProvider.Shutdown
+     ⎕EX'∆loggerProvider'
+ :EndIf
+ :If 0≠⎕NC'∆meterProvider'
+     ∆meterProvider.Shutdown
+     ⎕EX'∆meterProvider'
+ :EndIf
+ :If 0≠⎕NC'∆tracerProvider'
+     ∆tracerProvider.Shutdown
+     ⎕EX'∆tracerProvider'
+ :EndIf

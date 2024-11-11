@@ -1,0 +1,6 @@
+ toKeyValue←{
+     r←⎕NS''
+     r.key←⍺
+     r.value←ToAnyValue ⍵
+     r
+ }

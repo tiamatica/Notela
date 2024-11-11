@@ -1,0 +1,16 @@
+:Class UpDownCounterNOP
+    ∇ make arg
+      :Access Public
+      :Implements Constructor
+    ∇
+
+    ∇ Add arg
+      :Access Public
+    ∇
+
+    ∇ r←Collect
+      :Access Public
+      r←⍬
+    ∇
+    ⍝
+:EndClass

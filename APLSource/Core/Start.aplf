@@ -1,0 +1,4 @@
+ Start cfg
+ ∆loggerProvider←⎕NEW LoggerProvider cfg
+ ∆meterProvider←⎕NEW MeterProvider cfg
+ ∆tracerProvider←⎕NEW TracerProvider cfg

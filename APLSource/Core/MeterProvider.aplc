@@ -1,0 +1,165 @@
+:Class MeterProvider: IMeterProvider
+    :Include Tools
+
+    :Field Private Instance _cfg←⍬
+    :Field Private Instance _instruments←⍬
+    :Field Private Instance _timer←⍬
+
+    ∇ make cfg;handler;ind;name;version
+      :Access Public
+      :Implements Constructor
+    ⍝ cfg = Configuration instance
+      PS←(⊃⊃⎕CLASS ⎕THIS).##
+      :If 9.2=⎕NC⊂'cfg'
+      :AndIf PS.API.Configuration≡⊃⊃⎕CLASS cfg
+          _cfg←cfg
+      :Else
+          'Requires a Configuration instance'⎕SIGNAL 11
+      :EndIf
+      handler←(⍕⊃⊃⎕CLASS ⎕THIS),'.OnTimer'
+        _timer←⎕NEW⊂'Timer'
+⍝        _timer.FireOnce←1
+        _timer.Interval←_cfg.ExportInterval
+        _timer.onTimer←handler
+    ∇
+
+    ∇ OnTimer arg;tmr;provider
+      :Access Public Shared
+      tmr←⊃arg
+      provider←tmr.##
+      provider.ForceFlush 
+ ⍝      ⎕←'Called on timer after "⎕EX _timer"'  
+    ∇
+
+    ∇ r←GetMeter arg;ind;name;version
+      :Implements Method IMeterProvider.GetMeter
+      name version←2↑(⊆arg),⊂''
+     
+      r←⎕NEW PS.Meter(_cfg name version)
+    ∇
+
+    ∇ r←Shutdown
+      :Implements Method IMeterProvider.Shutdown
+      ⎕EX'_timer'
+      ForceFlush
+      _instruments←⍬
+    ∇
+
+    ∇ r←ForceFlush
+      :Implements Method IMeterProvider.ForceFlush
+      ExportMeters
+    ∇
+
+    ∇ r←AddView bounds
+      :Implements Method IMeterProvider.AddView
+      r←2,/bounds
+    ∇
+
+    ∇ instrument←CreateCounter(meter name)
+      :Access Public Instance
+      instrument←⎕NEW PS.Counter name
+      instrument.scope←meter.Scope
+      :Hold '_instruments'
+          _instruments,←instrument
+      :EndHold
+    ∇
+
+    ∇ instrument←CreateGauge(meter name)
+      :Access Public Instance
+      instrument←⎕NEW PS.Gauge name
+      instrument.scope←meter.Scope
+      :Hold '_instruments'
+          _instruments,←instrument
+      :EndHold
+    ∇
+
+    ∇ instrument←CreateObservableGauge(meter args)
+      :Access Public Instance
+      instrument←⎕NEW PS.ObservableGauge args
+      instrument.scope←meter.Scope
+      :Hold '_instruments'
+          _instruments,←instrument
+      :EndHold
+    ∇
+
+    ∇ instrument←CreateHistogram(meter arg)
+      :Access Public Instance
+      instrument←⎕NEW PS.Histogram   (,⊆arg)
+      instrument.scope←meter.Scope
+      :Hold '_instruments'
+          _instruments,←instrument
+      :EndHold
+    ∇
+
+    ∇ instrument←CreateUpDownCounter(meter name)
+      :Access Public Instance
+      instrument←⎕NEW PS.UpDownCounter name
+      instrument.scope←meter.Scope
+      :Hold '_instruments'
+          _instruments,←instrument
+      :EndHold
+    ∇
+
+
+    ∇ Collect
+      :Access Public Instance
+      :If 0<≢_instruments
+          ExportMeters _instruments
+      :EndIf
+    ∇
+
+    ∇ ExportMeters;callspace;exporter;fn;resource;rm;rs;scopeMetric;scopeSpan;t;metrics
+      :Access Public Instance
+    ⍝ Export to OTEL backend or log file
+      :If 0=≢_instruments
+          :Return
+      :EndIf
+      :Trap _cfg.Debug↓0
+          metrics←_instruments.Collect
+          t←⎕NS''
+          t.resourceMetrics←,rm←⎕NS''
+          rm.resource←resource←⎕NS''
+          resource.attributes←toKeyValue/2 2⍴'service.name'_cfg.ServiceName'service.version'_cfg.ServiceVersion
+          rm.scopeMetrics←,_instruments.scope{
+              scopeMetric←⎕NS''
+              scopeMetric.scope←⎕NS''
+              scopeMetric.scope.(name version)←⊃⍺
+              scopeMetric.scope.attributes←,'my.scope.attribute'toKeyValue'some scope attribute'
+⍝              scopeMetric.metrics←⊃,/⍵
+              scopeMetric.metrics←⍵~⊂⍬   
+              scopeMetric
+          }⌸metrics
+     
+          :If 0=≢_cfg.Exporters
+              PostHttpJson t
+          :EndIf
+          :For exporter :In _cfg.Exporters
+              callspace fn←exporter
+              (callspace⍎fn)t
+          :EndFor
+     
+      :EndTrap
+    ⍝
+    ∇
+
+    ∇ r←Meters
+      :Access Public Instance
+    ⍝ Return all meters
+      r←_instruments
+    ∇
+    ∇ PostHttpJson metric;json;cmd;res;ts
+      json←⎕JSON metric
+      cmd←PS.HttpCommand.New'POST'_cfg.OtelHttpUrlMetrics
+      cmd.ContentType←'application/json'
+      cmd.Params←json
+      res←cmd.Run
+      LogError(200≠⊃res.HttpStatus)'Failed posting metric'
+    ∇
+
+    ∇ LogError msg
+      :If _cfg.Debug∧0≠⊃msg
+          ⎕←1↓msg
+      :EndIf
+    ∇
+
+:EndClass

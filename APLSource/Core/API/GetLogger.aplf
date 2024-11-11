@@ -1,0 +1,4 @@
+ r←GetLogger app
+⍝ Get logger instance for app
+⍝ app: name [version]
+ r←##.GetLogger app

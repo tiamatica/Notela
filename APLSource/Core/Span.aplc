@@ -1,0 +1,252 @@
+:Class Span
+:Include Tools
+
+    :Field Private Instance name
+    :Field Private Instance traceId
+    :Field Private Instance parentSpanId
+    :Field Private Instance spanId
+    :Field Private Instance startTime
+    :Field Private Instance endTime
+    :Field Private Instance kind
+    :Field Private Instance attributes
+
+    :Field Private Instance events
+   ⍝ An n-element array with events. Each element
+   ⍝ contains an Event name and Event attribute.
+
+    :Field Private Instance links
+    :Field Private Instance isEnded
+    :Field Private Instance statusCode
+    :Field Private Instance statusMessage
+    :Field Private Instance tid
+
+    ∇ make context
+      :Access Public
+      :Implements Constructor
+      :If {0::1 ⋄ ~(⊃⊃⎕CLASS ⎕THIS).##.ITracerProvider∊⊃⎕CLASS ⍵}⊃⎕RSI
+          isEnded←1
+          'Spans must be created from tracer'⎕SIGNAL 982
+      :EndIf
+      isEnded←0
+     
+      (traceId parentSpanId spanId name)←context
+     
+      startTime←Now
+      endTime←0
+      kind←SPANKIND_INTERNAL
+      attributes←0 2⍴''⍬
+      events←⍬
+      links←⍬
+      statusCode←STATUS_CODE_UNSET
+      statusMessage←''
+      setTest←''
+      tid←⎕TID
+      ⍝
+    ∇
+
+    ∇ die
+      :Access Private
+      :Implements Destructor
+      :If ~isEnded
+          End
+      :EndIf
+    ∇
+
+    :Property Simple EndTime,Kind,Name,ParentSpanId,SpanId,StartTime,TraceId,Tid
+    :Access Public
+        ∇ r←get ipa
+          r←⍎(¯1 ⎕C 1↑ipa.Name),1↓ipa.Name
+        ∇
+    :EndProperty
+
+    :Property Simple ToObject
+    :Access Public
+        ∇ r←get ipa;s
+          r←(⊃⎕RSI).⎕NS''
+          r.name←name
+          r.traceId←traceId
+          r.parentSpanId←parentSpanId
+          r.spanId←spanId
+          r.startTimeUnixNano←timeUnixNano startTime
+          r.endTimeUnixNano←timeUnixNano endTime
+          r.kind←kind
+          r.attributes←toKeyValue/attributes
+          r.events←events
+          r.links←links
+          r.status←⎕NS''
+          r.status.code←statusCode
+          r.status.message←statusMessage
+        ∇
+    :EndProperty
+
+    ∇ {evtName}AddEvent attrs;attrm;r
+      :Access Public Instance
+      ⍝ Add a Span Event
+      ⍝ larg, mv:
+      ⍝ Attributes must be key-val pairs
+      ⍝ evtName, cv: Event name
+      ⍝ attrs, nested: Key/value pairs
+      :If 0=⎕NC'evtName'
+          evtName←''
+      :EndIf
+      attrm←toKeyValueMatrix attrs
+      validateAttributes attrm
+      r←⎕NS''
+      r.name←evtName
+      r.timeUnixNano←timeUnixNano 0
+      r.attributes←toKeyValue/attrm
+      ⍝r.message←val
+      events,←r
+    ∇
+
+    ∇ {attrs}AddLink span;r;attrm
+      :Access Public Instance
+      r←⎕NS''
+      r.traceId←span.TraceId
+      r.spanId←span.SpanId
+      r.traceState←''
+      :If 0≠⎕NC'attrs'
+          attrm←toKeyValueMatrix attrs
+          validateAttributes attrm
+          r.attributes←toKeyValue/attrm
+      :EndIf
+      links,←r
+      ⍝
+    ∇
+
+  ⍝ Returns the context (HTTP header) associated with this Span.
+    :Property Simple Context
+    :Access Public Instance
+  ⍝ Returns Context
+        ∇ r←get ipa
+          r←1 2⍴'traceparent'('00-',traceId,'-',spanId,'-01')
+        ⍝r⍪←'tracecontext' ''
+        ∇
+    :EndProperty
+
+    ∇ r←GetAttribute attr;lookup
+      :Access Public Instance
+   ⍝ Get a single Attribute with the
+   ⍝ key passed as argument.
+   ⍝ ra, cv: attribute key
+   ⍝ Return, Attribute value
+      lookup←attributes[;1]⍳⊆attr
+      :If lookup≤≢attributes
+          r←⊃attributes[lookup;2]
+      :Else
+          LogError 6('Attribute [',attr,'] not found')
+      :EndIf
+    ∇
+
+    ∇ r←SetAttributes attrs;attrm
+      :Access Public Instance
+   ⍝ Sets Attributes to the Span
+   ⍝ ra, nv: 2-elements key val pairs
+      attrm←toKeyValueMatrix attrs
+      validateAttributes attributes⍪attrm
+      attributes⍪←attrm
+    ∇
+
+    ∇ SetKind ra
+      :Access Public
+      :If ~ra∊SPANKIND_UNSPECIFIED SPANKIND_INTERNAL SPANKIND_SERVER SPANKIND_CLIENT SPANKIND_PRODUCER SPANKIND_CONSUMER
+          'Invalid span kind'⎕SIGNAL 11
+      :EndIf
+      kind←ra
+    ∇
+
+    ∇ r←{msg}SetStatus status
+      :Access Public Instance
+   ⍝ Sets status of the Span
+   ⍝ ra, ns: 0 - OK, 1 - Error
+   ⍝ la, cv: optional status messagw
+   ⍝ Return, Span
+      :If ~status∊STATUS_CODE_OK STATUS_CODE_ERROR
+          'Invalid status code'⎕SIGNAL 11
+      :EndIf
+      :If 2=⎕NC'msg'
+          :If 0=10|⎕DR msg
+              statusMessage←msg
+          :Else
+              'A status message must be a string'⎕SIGNAL 11
+          :EndIf
+      :EndIf
+      statusCode←status
+    ∇
+
+    ∇ r←UpdateName n
+    ⍝ Update the Span name
+    ⍝ rarg, name to update
+    ⍝ Return, Span
+      CheckOpen
+      name←n
+    ∇
+
+    ∇ CheckOpen
+      'Span already ended'⎕SIGNAL isEnded/800
+    ∇
+
+    ∇ End
+⍝   Marks the end of Span execution.
+⍝   Call to End of a Span MUST not have any effects on child spans.
+⍝   Those may still be running and can be ended later
+      :Access Public Instance
+      CheckOpen
+      endTime←Now
+      isEnded←1
+      ##.End ⎕THIS
+    ∇
+
+    ∇ r←Info
+      :Access Public
+      r←startTime endTime
+    ∇
+
+    ∇ LogError msg
+      ##.LogError msg
+    ∇
+
+    :Section SPANKIND
+    ⍝ Unspecified. Do NOT use as default.
+    ⍝ Implementations MAY assume SpanKind to be INTERNAL when receiving UNSPECIFIED.
+    :Field Public Shared ReadOnly SPANKIND_UNSPECIFIED←0
+
+    ⍝ Indicates that the span represents an internal operation within an application,
+    ⍝ as opposed to an operation happening at the boundaries. Default value.
+    :Field Public Shared ReadOnly SPANKIND_INTERNAL←1
+
+    ⍝ Indicates that the span covers server-side handling of an RPC or other
+    ⍝ remote network request.
+    :Field Public Shared ReadOnly SPANKIND_SERVER←2
+
+    ⍝ Indicates that the span describes a request to some remote service.
+    :Field Public Shared ReadOnly SPANKIND_CLIENT←3
+
+    ⍝ Indicates that the span describes a producer sending a message to a broker.
+    ⍝ Unlike CLIENT and SERVER, there is often no direct critical path latency relationship
+    ⍝ between producer and consumer spans. A PRODUCER span ends when the message was accepted
+    ⍝ by the broker while the logical processing of the message might span a much longer time.
+    :Field Public Shared ReadOnly SPANKIND_PRODUCER←4
+
+    ⍝ Indicates that the span describes consumer receiving a message from a broker.
+    ⍝ Like the PRODUCER kind, there is often no direct critical path latency relationship
+    ⍝ between producer and consumer spans.
+    :Field Public Shared ReadOnly SPANKIND_CONSUMER←5
+    :EndSection ⍝ SPANKIND
+
+    :Section STATUSCODE
+    ⍝ For the semantics of status codes see
+    ⍝ https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/api.md#set-status
+
+    ⍝ Default status
+    :Field Public Shared ReadOnly STATUS_CODE_UNSET←0
+
+    ⍝ The Span has been validated by an Application developer or Operator to
+    ⍝ have completed successfully.
+    :Field Public Shared ReadOnly STATUS_CODE_OK←1
+
+    ⍝ The Span contains an error.
+    :Field Public Shared ReadOnly STATUS_CODE_ERROR←2
+    :EndSection ⍝ STATUSCODE
+
+:EndClass

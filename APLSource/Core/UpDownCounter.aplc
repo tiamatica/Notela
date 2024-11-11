@@ -1,0 +1,55 @@
+:Class UpDownCounter
+    :Include Tools
+⍝
+    :Field Private Instance name
+    :Field Private Instance values
+
+    ∇ make arg
+      :Access Public
+      :Implements Constructor
+      :If {0::1 ⋄ ~(⊃⊃⎕CLASS ⎕THIS).##.IMeterProvider∊⊃⎕CLASS ⍵}⊃⎕RSI
+          'Counter must be created from Meter'⎕SIGNAL 982
+      :EndIf
+      name description←2↑(⊆arg),⊂''
+      values←0 2⍴0 ''
+      startTime←timeUnixNano 0
+      ⍝
+    ∇
+
+    ∇ Add arg;attrs;value
+      :Access Public
+      value←⊃arg
+      attrs←{(⊂⍋⍵)⌷⍵}toKeyValueMatrix 1↓arg
+      values⍪←value attrs
+    ∇
+
+    ∇ r←Collect;sums
+      :Access Public
+      :If 0=≢values
+          r←⍬
+      :Else
+          r←⎕NS''
+          r.name←name
+          r.unit←''
+          r.description←description
+          r.aggregationTemporality←AGGREGATION_TEMPORALITY_DELTA
+          r.isMonotonic←⊂'true'
+          r.sum←⎕NS''
+          sums←values[;2]{(+/⍵),⍺}⌸values[;1]
+          r.sum.dataPoints←{
+              dp←⎕NS''
+              dp.asDouble←⍺
+              dp.attributes←toKeyValue/⍵
+              dp
+          }/sums
+          r.sum.dataPoints.startTimeUnixNano←⊂startTime
+          r.sum.dataPoints.timeUnixNano←⊂startTime←timeUnixNano 0
+          values←0⌿values
+      :EndIf
+    ∇
+
+    AGGREGATION_TEMPORALITY_UNSPECIFIED ←0
+    AGGREGATION_TEMPORALITY_DELTA       ←1
+    AGGREGATION_TEMPORALITY_CUMULATIVE  ←2
+
+:EndClass

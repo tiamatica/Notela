@@ -1,0 +1,29 @@
+:Class LogSeverity
+    :Field Public Shared ReadOnly TRACE  ← 1
+    :Field Public Shared ReadOnly TRACE2 ← 2	
+    :Field Public Shared ReadOnly TRACE3 ← 3	
+    :Field Public Shared ReadOnly TRACE4 ← 4	
+    :Field Public Shared ReadOnly DEBUG  ← 5	
+    :Field Public Shared ReadOnly DEBUG2 ← 6	
+    :Field Public Shared ReadOnly DEBUG3 ← 7	
+    :Field Public Shared ReadOnly DEBUG4 ← 8	
+    :Field Public Shared ReadOnly INFO   ← 9	
+    :Field Public Shared ReadOnly INFO2  ← 10
+    :Field Public Shared ReadOnly INFO3  ← 11
+    :Field Public Shared ReadOnly INFO4  ← 12
+    :Field Public Shared ReadOnly WARN   ← 13
+    :Field Public Shared ReadOnly WARN2  ← 14
+    :Field Public Shared ReadOnly WARN3  ← 15
+    :Field Public Shared ReadOnly WARN4  ← 16
+    :Field Public Shared ReadOnly ERROR  ← 17
+    :Field Public Shared ReadOnly ERROR2 ← 18
+    :Field Public Shared ReadOnly ERROR3 ← 19
+    :Field Public Shared ReadOnly ERROR4 ← 20
+    :Field Public Shared ReadOnly FATAL  ← 21
+    :Field Public Shared ReadOnly FATAL2 ← 22
+    :Field Public Shared ReadOnly FATAL3 ← 23
+    :Field Public Shared ReadOnly FATAL4 ← 24
+    :Field Public Shared ReadOnly ∆NAMES ← (⎕nl ¯2)~⊂'∆NAMES'
+    :Field Public Shared ReadOnly ∆VALUES ← ⍎¨∆NAMES
+:EndClass ⍝ Severity
+

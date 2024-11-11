@@ -1,0 +1,22 @@
+:Class Logger
+    :Include Tools
+    :Field Private Instance _scopeName
+    :Field Private Instance _scopeVersion
+
+    ∇ make2(name version)
+      :Access Public
+      :Implements Constructor
+      _scopeName←name
+      _scopeVersion←version
+    ∇
+
+    ∇ {severity}Log body
+      :Access Public Instance
+      :If 0=⎕NC'severity'
+          severity←1
+      :EndIf
+      ##.Log(_scopeName _scopeVersion)body severity
+    ∇
+
+
+:EndClass

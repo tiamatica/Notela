@@ -1,0 +1,60 @@
+:Class Tracer: ITracer
+⍝Handles span creation and in-process context propagation.
+⍝This class provides methods for manipulating the context,
+⍝creating spans, and controlling spans’ lifecycles.
+
+    :Field Private Instance _scopeName
+    :Field Private Instance _scopeVersion
+
+    ∇ make2(scopeName scopeVersion)
+      :Access Public
+      :Implements Constructor
+      _scopeName←scopeName
+      _scopeVersion←scopeVersion
+    ∇
+
+    ∇ r←GetContext
+ ⍝     :Access Public Instance
+      :Implements Method ITracer.GetContext
+      r←##.GetContext ⎕THIS
+    ∇
+
+    ∇ r←GetActiveSpan
+ ⍝     :Access Public Instance
+      :Implements Method ITracer.GetActiveSpan
+      r←##.GetActiveSpan ⎕THIS
+    ∇
+
+    ∇ span←{context}StartSpan name
+ ⍝     :Access Public Instance
+      :Implements Method ITracer.StartSpan
+ ⍝ Create span with name in context.
+ ⍝ If no context provided, create span in active span.
+ ⍝ If no active span, create new root span.
+ ⍝ Does not set the span as active (consider using StartActiveSpan for that).
+      :If 0=⎕NC'context'
+          span←##.StartSpan ⎕THIS name
+      :Else
+          span←context ##.StartSpan ⎕THIS name
+      :EndIf
+    ∇
+
+    ∇ span←{context}StartActiveSpan name;currentSpan;row;list
+ ⍝     :Access Public Instance
+      :Implements Method ITracer.StartActiveSpan
+⍝ Create span with name in active context.
+ ⍝ If no active context, create new root span.
+ ⍝ Sets the span as active.
+      :If 0=⎕NC'context'
+          span←##.StartActiveSpan ⎕THIS name
+      :Else
+          span←context ##.StartActiveSpan ⎕THIS name
+      :EndIf
+    ∇
+
+    ∇ r←Scope
+      :Access Public Instance
+      r←_scopeName _scopeVersion
+    ∇
+
+:EndClass

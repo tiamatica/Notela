@@ -1,0 +1,34 @@
+:Class LoggerProviderNOP: ILoggerProvider
+    ⍝ Logger Provider initialization
+
+    ∇ make0
+      :Access Public
+      :Implements Constructor
+      PS←(⊃⊃⎕CLASS ⎕THIS).##
+    ∇
+
+    ∇ r←GetLogger args;ind;name;version;scopeName;scopeVersion
+      :Implements Method ILoggerProvider.GetLogger
+      ⍝ name = ScopeName [ScopeVersion]
+      r←⎕NEW PS.LoggerNOP
+    ∇
+
+    ∇ {log}←Log(logger body);traceId;spanId;tracer;span
+      :Implements Method ILoggerProvider.Log
+      log←⎕NEW PS.LoggerNOP
+    ∇
+
+    ∇ End log;children;tracespans;parents;c
+      :Access Public Instance
+    ∇
+
+    ∇ {r}←Shutdown
+      :Implements Method ILoggerProvider.Shutdown
+      r←0
+    ∇
+
+    ∇ {r}←ForceFlush
+      :Access Public Instance
+    ∇
+
+:EndClass

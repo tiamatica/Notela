@@ -1,0 +1,15 @@
+:Interface IMeterProvider
+
+    ∇ r←GetMeter arg
+    ∇
+
+    ∇ r←Shutdown                 
+    ∇
+
+    ∇ r←ForceFlush
+    ∇
+
+    ∇ r←AddView bounds
+    ∇
+:EndInterface
+

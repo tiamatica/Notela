@@ -1,0 +1,21 @@
+:Class SpanNOP
+
+    ∇ make
+      :Access Public
+      :Implements Constructor
+    ∇
+    ∇ r←GetAttribute attr
+      :Access Public Instance
+    ∇
+    ∇ r←SetAttributes attrs
+    ∇
+    ∇ SetKind ra
+    ∇
+    ∇ r←{msg}SetStatus status
+    ∇
+    ∇ CheckOpen
+    ∇
+    ∇ End
+      :Access Public Instance
+    ∇
+:EndClass
