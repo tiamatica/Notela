@@ -1,5 +1,4 @@
 :Interface IMeterProvider
-
     ∇ r←GetMeter arg
     ∇
 

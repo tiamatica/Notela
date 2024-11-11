@@ -21,6 +21,7 @@
 ⍝        _timer.FireOnce←1
         _timer.Interval←_cfg.ExportInterval
         _timer.onTimer←handler
+⍝        _timer.Active←0
     ∇
 
     ∇ OnTimer arg;tmr;provider
@@ -38,16 +39,17 @@
       r←⎕NEW PS.Meter(_cfg name version)
     ∇
 
-    ∇ r←Shutdown
+    ∇ {r}←Shutdown
       :Implements Method IMeterProvider.Shutdown
       ⎕EX'_timer'
-      ForceFlush
+      r←ForceFlush
       _instruments←⍬
     ∇
 
     ∇ r←ForceFlush
       :Implements Method IMeterProvider.ForceFlush
       ExportMeters
+      r←0
     ∇
 
     ∇ r←AddView bounds

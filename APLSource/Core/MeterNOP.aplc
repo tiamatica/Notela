@@ -1,0 +1,45 @@
+:Class MeterNOP: IMeter 
+
+    :Field Private Instance _scopeName
+    :Field Private Instance _scopeVersion
+    :Field Private Instance _instruments
+
+    ∇ make
+      :Access Public
+      :Implements Constructor
+⍝      _instruments←⍬
+    ∇
+
+    :Property Simple Scope
+    :Access Public
+        ∇ r←get ipa
+          r←_scopeName _scopeVersion
+        ∇
+    :EndProperty
+
+    ∇ instrument←CreateCounter name
+      :Implements Method IMeter.CreateCounter
+      instrument←##.CreateCounter ⎕THIS name
+    ∇
+
+    ∇ instrument←CreateGauge name
+      :Implements Method IMeter.CreateGauge
+      instrument←##.CreateGauge ⎕THIS name
+    ∇
+
+    ∇ {instrument}←CreateObservableGauge name
+      :Implements Method IMeter.CreateObservableGauge
+      instrument←##.CreateObservableGauge ⎕THIS name
+    ∇
+
+    ∇ instrument←CreateHistogram arg
+      :Implements Method IMeter.CreateHistogram
+      instrument←##.CreateHistogram ⎕THIS arg
+    ∇
+
+    ∇ instrument←CreateUpDownCounter name
+      :Implements Method IMeter.CreateUpDownCounter
+      instrument←##.CreateUpDownCounter ⎕THIS name
+    ∇
+⍝
+:EndClass

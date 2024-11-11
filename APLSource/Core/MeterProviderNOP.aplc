@@ -12,14 +12,14 @@
       r←⎕NEW PS.MeterNOP
     ∇
 
-    ∇ r←Shutdown
+    ∇ {r}←Shutdown
       :Implements Method IMeterProvider.Shutdown
-      r←⍬
+      r←0
     ∇
 
-    ∇ r←ForceFlush
+    ∇ {r}←ForceFlush
       :Implements Method IMeterProvider.ForceFlush
-      r←⍬
+      r←0
     ∇
 
     ∇ r←AddView bounds
