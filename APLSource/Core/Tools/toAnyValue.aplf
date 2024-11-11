@@ -1,4 +1,4 @@
- toAnyValueDfn←{
+ toAnyValue←{
      r←⎕NS''
      (2=⍴⍴⍵)∧(2=⊃⌽⍴⍵):r{
          ⍺.kvlistValue←⎕NS''
