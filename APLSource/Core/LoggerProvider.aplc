@@ -2,10 +2,12 @@
     :Include Tools
     ⍝ Logger Provider initialization
     :Field Private Instance _cfg
-    :Field Private Instance _logsBuffer
+    :Field Private Instance _httpClt
+    :Field Private Instance _logs
+    :Field Private Instance _resourceLog
     :Field Private Instance _isShuttingDown
 
-    ∇ make cfg
+    ∇ make cfg;resource
       :Access Public
       :Implements Constructor
       ⎕RL←⍬ 1
@@ -16,26 +18,46 @@
       :Else
           'Constructor requires a Configuration instance'⎕SIGNAL 11
       :EndIf
-      _logsBuffer←⍬
+      _logs←⎕NS''
+      _resourceLog←_logs.⎕NS''
+      _logs.resourceLogs←,_resourceLog
+      resource←_resourceLog.(resource←⎕NS'')
+      resource.attributes←toKeyValue/2 2⍴'service.name'_cfg.ServiceName'service.version'_cfg.ServiceVersion
+      _resourceLog.scopeLogs←⍬
       _isShuttingDown←0
+      _httpClt←⎕NEW PS.HttpCommand
+      _httpClt.Command←'post'
+      _httpClt.URL←_cfg.OtelHttpUrlLogs
+      _httpClt.ContentType←'application/json'
+
     ∇
 
-    ∇ r←GetLogger args;ind;name;version;scopeName;scopeVersion
+    ∇ r←GetLogger args;ind;name;version;scopeName;scopeVersion;scopeLog;attrs
       :Implements Method ILoggerProvider.GetLogger
-      ⍝ name = ScopeName [ScopeVersion]
-      scopeName scopeVersion←2↑(⊆args),⊂_cfg.ServiceVersion
-      r←⎕NEW PS.Logger(scopeName scopeVersion)
+      ⍝ args = ScopeName [ScopeVersion] [attributes]
+      args←,⊆args
+      args←args,(1=≢args)/⊂_cfg.ServiceVersion
+      scopeName scopeVersion←2↑args
+      attrs←toKeyValueMatrix 2↓args
+      scopeLog←_resourceLog.⎕NS''
+      scopeLog.scope←⎕NS''
+      scopeLog.scope.(name version)←scopeName scopeVersion
+      scopeLog.scope.attributes←toKeyValue/attrs
+      scopeLog.logRecords←⍬
+      _resourceLog.scopeLogs,←scopeLog
+      r←⎕NEW PS.Logger(,scopeLog)
     ∇
 
-    ∇ Log args;attrs;body;log;scope;severity;span;spanId;traceId;tracer
+    ∇ scope Log args;attrs;body;log;severity;span;spanId;traceId;tracer
       :Implements Method ILoggerProvider.Log
-      scope body severity attrs←4↑args,(≢args)↓('' '')''(PS.API.LogSeverity.INFO'')(0 2⍴⊂'')
+      args,←(≢args)↓(PS.API.LogSeverity.INFO'')''
+      severity body←2↑args
+      attrs←toKeyValueMatrix 2↓args
       severity←2↑severity,⊂''
-      log←(⊃⎕RSI).⎕NS''
-      log.scope←scope
+      log←scope.⎕NS''
       log.spanId←''
       log.traceId←''
-      log.body←ToAnyValue body
+      log.body←toAnyValue body
       log.timeUnixNano←timeUnixNano 0
       log.attributes←toKeyValue/attrs
       log.severityNumber←1⊃severity
@@ -46,47 +68,36 @@
       :If 0<≢span
           log.(traceId spanId)←span.(TraceId SpanId)
       :EndIf
-      :Hold '_logsBuffer'
-          _logsBuffer,←log
+      :Hold '_logs'
+          scope.logRecords,←log
       :EndHold
-      0 ProcessLogs,log
+      ProcessLogs 0
     ∇
 
-    ∇ {r}←flush ProcessLogs logs
+    ∇ {r}←ProcessLogs flush;bufferLength;logs
       ⍝ Recieve logs for further processing such as batching, sampling and/or enrichment
-      ⍝ Token value is one of:
-      ⍝  ¯1 to stop process loop
-      ⍝   0 to force flush
-      ⍝   vector of span objects to process
+      ⍝ flush = 1 to force flush buffered logs
       :If flush∨~_isShuttingDown
-      :AndIf (flush∧0<≢_logsBuffer)∨(_cfg.BatchSize≤≢_logsBuffer)
-          ExportLogs&_logsBuffer
-          _logsBuffer←⍬
+          bufferLength←+/≢¨_resourceLog.scopeLogs.logRecords
+      :AndIf (flush∧0<bufferLength)∨(_cfg.BatchSize≤bufferLength)
+          :Hold '_logs'
+              logs←⎕NS _logs
+              _resourceLog.scopeLogs.logRecords←⊂⍬
+          :EndHold
+          ExportLogs&logs
       :EndIf
       r←0
     ∇
 
-    ∇ {r}←ExportLogs logs;t;rl;resource;scopeLog;logR;attr;exporter;callspace;fn
+    ∇ {r}←ExportLogs logs;scopeLog;logR;attr;exporter;callspace;fn
 ⍝ Export to OTEL backend or log file
       :Trap _cfg.Debug↓0
-          t←⎕NS''
-          t.resourceLogs←,rl←⎕NS''
-          rl.resource←resource←⎕NS''
-          resource.attributes←toKeyValue/2 2⍴'service.name'_cfg.ServiceName'service.version'_cfg.ServiceVersion
-          rl.scopeLogs←logs.scope{
-              scopeLog←⎕NS''
-              scopeLog.scope←⎕NS''
-              scopeLog.scope.(name version)←⊃⍺
-              scopeLog.scope.attributes←⍬
-              scopeLog.logRecords←,⍵
-              scopeLog
-          }⌸logs
           :If 0=≢_cfg.Exporters
-              PostHttpJson t
+              PostHttpJson logs
           :EndIf
           :For exporter :In _cfg.Exporters
               callspace fn←exporter
-              (callspace⍎fn)t
+              (callspace⍎fn)logs
           :EndFor
       :Else
           LogError ⎕EN(↑⎕DM)
@@ -94,13 +105,10 @@
     ⍝
     ∇
 
-    ∇ PostHttpJson log;json;cmd;res;ts
-      json←⎕JSON log
-      cmd←PS.HttpCommand.New'POST'_cfg.OtelHttpUrlLogs
-      cmd.ContentType←'application/json'
-      cmd.Params←json
-      res←cmd.Run
-      LogError(200≠⊃res.HttpStatus)'Failed posting log'
+    ∇ PostHttpJson logs;res;ts
+      _httpClt.Params←logs
+      res←_httpClt.Run
+      LogError(200≠⊃res.HttpStatus)'Failed posting logs'
     ∇
 
     ∇ LogError msg
@@ -112,12 +120,12 @@
     ∇ {r}←Shutdown
       :Implements Method ILoggerProvider.Shutdown
       _isShuttingDown←1
-      r←1 ProcessLogs _logsBuffer
+      r←ProcessLogs 1
     ∇
 
     ∇ {r}←ForceFlush
       :Access Public Instance
-      r←1 ProcessLogs _logsBuffer
+      r←ProcessLogs 1
     ∇
 
 

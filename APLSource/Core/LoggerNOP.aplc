@@ -5,9 +5,8 @@
       :Implements Constructor
     ∇
 
-    ∇ {severity}Log body
+    ∇ {severity}Log args
       :Access Public Instance
-      ##.Log ⎕THIS body
     ∇
 
 :EndClass

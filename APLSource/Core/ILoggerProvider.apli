@@ -5,6 +5,6 @@
     ∇ r←Shutdown                  ⍝ Shut down LoggerProvider
     ∇
 
-    ∇ Log args              ⍝ Create log entry and return a log instance
+    ∇ scope Log args              ⍝ Create log entry
     ∇
 :EndInterface

@@ -1,5 +1,5 @@
 :Class LoggerProviderNOP: ILoggerProvider
-    ⍝ Logger Provider initialization
+    ⍝ Logger Provider initialization     
 
     ∇ make0
       :Access Public
@@ -13,9 +13,8 @@
       r←⎕NEW PS.LoggerNOP
     ∇
 
-    ∇ {log}←Log(logger body);traceId;spanId;tracer;span
+    ∇ scope Log args;traceId;spanId;tracer;span
       :Implements Method ILoggerProvider.Log
-      log←⎕NEW PS.LoggerNOP
     ∇
 
     ∇ End log;children;tracespans;parents;c
