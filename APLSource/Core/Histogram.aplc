@@ -37,6 +37,7 @@
       value←⊃arg
       attrs←{(⊂⍋⍵)⌷⍵}NamesValuesAsMatrix 1↓arg
       values⍪←value attrs
+      ##.ProcessMetrics
     ∇
 
     ∇ Clear

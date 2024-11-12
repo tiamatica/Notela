@@ -37,6 +37,7 @@
       dp.timeUnixNano←timeUnixNano 0
       dp.attributes←toKeyValue/attrs
       _metric.gauge.dataPoints,←dp
+      ##.ProcessMetrics
     ∇
 
     ∇ Clear

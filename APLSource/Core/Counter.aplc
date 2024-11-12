@@ -37,6 +37,7 @@
       value←⊃args
       attrs←{(⊂⍋⍵)⌷⍵}toKeyValueMatrix 1↓args
       values⍪←value attrs
+      ##.ProcessMetrics
     ∇
 
     ∇ Clear
