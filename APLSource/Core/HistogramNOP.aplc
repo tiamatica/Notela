@@ -1,15 +1,17 @@
-:Class ObservableGaugeNOP
-    ∇ make 
+:Class HistogramNOP
+    ∇ make
       :Access Public
       :Implements Constructor
+      ⍝
     ∇
 
-    ∇ WithCallback arg
+    ∇ Record arg
       :Access Public
     ∇
 
     ∇ r←Collect
       :Access Public
+      r←⍬
     ∇
     ⍝
 :EndClass

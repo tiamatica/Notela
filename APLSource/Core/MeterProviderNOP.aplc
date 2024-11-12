@@ -22,33 +22,18 @@
       r←0
     ∇
 
-    ∇ r←AddView bounds
-      :Implements Method IMeterProvider.AddView
-      r←⍬
-    ∇
-    ∇ instrument←CreateCounter(meter name)
-      :Access Public Instance
-      instrument←⎕NEW PS.CounterNOP name
+    ∇ instrument←CreateCounter(scopeMetric args)
+      :Implements Method IMeterProvider.CreateCounter
+      instrument←⎕NEW PS.InstrumentNOP
     ∇
 
-    ∇ instrument←CreateGauge(meter name)
-      :Access Public Instance
-      instrument←⎕NEW PS.GaugeNOP name
+    ∇ instrument←CreateGauge(scopeMetric args)
+      :Implements Method IMeterProvider.CreateGauge
+      instrument←⎕NEW PS.InstrumentNOP
     ∇
 
-    ∇ instrument←CreateObservableGauge(meter name)
-      :Access Public Instance
-      instrument←⎕NEW PS.ObservableGaugeNOP 
+    ∇ instrument←CreateHistogram(scopeMetric args)
+      :Implements Method IMeterProvider.CreateHistogram
+      instrument←⎕NEW PS.InstrumentNOP
     ∇
-
-    ∇ instrument←CreateHistogram(meter arg)
-      :Access Public Instance
-      instrument←⎕NEW PS.HistogramNOP
-    ∇
-
-    ∇ instrument←CreateUpDownCounter(meter name)
-      :Access Public Instance
-      instrument←⎕NEW PS.UpDownCounterNOP name
-    ∇
-    ⍝
 :EndClass

@@ -1,10 +1,4 @@
 :Class CounterNOP
-    ∇ make arg
-      :Access Public
-      :Implements Constructor
-      ⍝
-    ∇
-
     ∇ Add arg;attrs;value
       :Access Public
     ∇
@@ -13,7 +7,5 @@
       :Access Public
       r←⍬
     ∇
-
-⍝
 :EndClass
 

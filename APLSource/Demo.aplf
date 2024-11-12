@@ -1,4 +1,4 @@
- Demo;app;cfg;logger;meter;notela;r;span;span2;tracer;var
+ Demo;app;cfg;logger;meter;notela;r;span;span2;tracer;var;gauge
  notela←Tests.SetupCore
 ⍝ Configure telemetry at startup of application
  app←'Demo' '0.1.2'
@@ -11,7 +11,7 @@
  logger←notela.GetLogger app
  meter←notela.GetMeter app
 
- meter.CreateObservableGauge'workspace.used' 'WS used' 'GetMemStats'
+ gauge←meter.CreateGauge'workspace.used' 'WS used'
 
  logger.Log'Starting application'
 
@@ -38,7 +38,7 @@
 
  span2←tracer.StartActiveSpan'WriteDB'
 ⍝ write back to DB
- ⎕DL .01
+ ⎕DL 0.01
  span2.End
 
 ⍝ done with work, wrap up and send back response

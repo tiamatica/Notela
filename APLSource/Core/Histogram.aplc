@@ -1,0 +1,71 @@
+:Class Histogram: IInstrument
+    :Include Tools
+⍝
+    :Field Private Instance bounds
+    :Field Private Instance description
+    :Field Private Instance name
+    :Field Private Instance startTime
+    :Field Private Instance values
+    :Field Private Instance _scopeMetric
+    :Field Private Instance _metric
+
+    ∇ make2(scopeMetric args)
+      :Access Public
+      :Implements Constructor
+      :If {0::1 ⋄ ~(⊃⊃⎕CLASS ⎕THIS).##.IMeterProvider∊⊃⎕CLASS ⍵}⊃⎕RSI
+          'Histogram must be created from Meter'⎕SIGNAL 982
+      :EndIf
+      _scopeMetric←scopeMetric 
+      args←,⊆args
+      name description bounds←args,(≢args)↓'' ''(0 5 10 15 10000)
+      startTime←timeUnixNano 0
+      values←0 2⍴0 ''
+
+      _metric←_scopeMetric.⎕NS''
+      _metric.name←name
+      _metric.unit←,'1'
+      _metric.description←description
+      _metric.(histogram←⎕NS'')
+      _metric.histogram.aggregationTemporality←AGGREGATION_TEMPORALITY_CUMULATIVE
+      _metric.histogram.dataPoints←⍬
+      _scopeMetric.metrics,←_metric
+      ⍝
+    ∇
+
+    ∇ Record arg;value;attrs
+      :Implements Method IInstrument.Record
+      value←⊃arg
+      attrs←{(⊂⍋⍵)⌷⍵}NamesValuesAsMatrix 1↓arg
+      values⍪←value attrs
+    ∇
+
+    ∇ Clear
+      :Implements Method IInstrument.Clear
+      _metric.histogram.dataPoints←⍬
+    ∇
+
+    ∇ Collect
+      :Implements Method IInstrument.Collect
+      :If 0<≢values
+          _metric.histogram.dataPoints←values[;2]{
+              dp←⎕NS''
+              dp.count←≢⍵
+              dp.sum←+/⍵
+              dp.bucketCounts←{¯1+≢⍵}⌸(0,⍳≢bounds),bounds⍸⍵
+              dp.explicitBounds←bounds
+              dp.min←⌊/⍵
+              dp.max←⌈/⍵
+              dp.attributes←ToKeyValue/⊃⍺
+              dp
+          }⌸values[;1]
+          _metric.histogram.dataPoints.startTimeUnixNano←⊂startTime
+          _metric.histogram.dataPoints.timeUnixNano←⊂startTime←TimeUnixNano 0
+          values←0⌿values
+      :EndIf
+    ∇
+
+    AGGREGATION_TEMPORALITY_UNSPECIFIED ←0
+    AGGREGATION_TEMPORALITY_DELTA       ←1
+    AGGREGATION_TEMPORALITY_CUMULATIVE  ←2
+
+:EndClass

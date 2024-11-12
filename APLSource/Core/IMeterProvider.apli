@@ -1,14 +1,20 @@
 :Interface IMeterProvider
-    ∇ r←GetMeter arg
+    ∇ r←GetMeter args
     ∇
 
     ∇ r←Shutdown                 
     ∇
 
     ∇ r←ForceFlush
+    ∇         
+
+    ∇ instrument←CreateCounter(scopeMetric args)
+    ∇                
+
+    ∇ instrument←CreateGauge(scopeMetric args)
     ∇
 
-    ∇ r←AddView bounds
+    ∇ instrument←CreateHistogram(scopeMetric args)
     ∇
 :EndInterface
 
