@@ -1,0 +1,14 @@
+:Class SpanStatusCode
+    ⍝ For the semantics of status codes see
+    ⍝ https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/api.md#set-status
+
+    ⍝ Default status
+    :Field Public Shared ReadOnly UNSET←0
+
+    ⍝ The Span has been validated by an Application developer or Operator to
+    ⍝ have completed successfully.
+    :Field Public Shared ReadOnly OK←1
+
+    ⍝ The Span contains an error.
+    :Field Public Shared ReadOnly ERROR←2
+:EndClass

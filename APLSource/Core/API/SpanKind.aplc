@@ -1,0 +1,27 @@
+:Class SpanKind
+    ⍝ Unspecified. Do NOT use as default.
+    ⍝ Implementations MAY assume SpanKind to be INTERNAL when receiving UNSPECIFIED.
+    :Field Public Shared ReadOnly UNSPECIFIED←0
+
+    ⍝ Indicates that the span represents an internal operation within an application,
+    ⍝ as opposed to an operation happening at the boundaries. Default value.
+    :Field Public Shared ReadOnly INTERNAL←1
+
+    ⍝ Indicates that the span covers server-side handling of an RPC or other
+    ⍝ remote network request.
+    :Field Public Shared ReadOnly SERVER←2
+
+    ⍝ Indicates that the span describes a request to some remote service.
+    :Field Public Shared ReadOnly CLIENT←3
+
+    ⍝ Indicates that the span describes a producer sending a message to a broker.
+    ⍝ Unlike CLIENT and SERVER, there is often no direct critical path latency relationship
+    ⍝ between producer and consumer spans. A PRODUCER span ends when the message was accepted
+    ⍝ by the broker while the logical processing of the message might span a much longer time.
+    :Field Public Shared ReadOnly PRODUCER←4
+
+    ⍝ Indicates that the span describes consumer receiving a message from a broker.
+    ⍝ Like the PRODUCER kind, there is often no direct critical path latency relationship
+    ⍝ between producer and consumer spans.
+    :Field Public Shared ReadOnly CONSUMER←5
+:EndClass

@@ -24,7 +24,8 @@
     ∇ make context
       :Access Public
       :Implements Constructor
-      :If {0::1 ⋄ ~(⊃⊃⎕CLASS ⎕THIS).##.ITracerProvider∊⊃⎕CLASS ⍵}⊃⎕RSI
+      PS←(⊃⊃⎕CLASS ⎕THIS).##
+      :If {0::1 ⋄ ~PS.ITracerProvider∊⊃⎕CLASS ⍵}⊃⎕RSI
           isEnded←1
           'Spans must be created from tracer'⎕SIGNAL 982
       :EndIf
@@ -34,11 +35,11 @@
      
       startTime←Now
       endTime←0
-      kind←SPANKIND_INTERNAL
-      attributes←0 2⍴''⍬
+      kind←PS.API.SpanKind.INTERNAL
+      attributes←0 2⍴⊂''
       events←⍬
       links←⍬
-      statusCode←STATUS_CODE_UNSET
+      statusCode←PS.API.SpanStatusCode.UNSET
       statusMessage←''
       tid←⎕TID
       ⍝
@@ -47,50 +48,47 @@
     ∇ die
       :Access Private
       :Implements Destructor
-      :If ~isEnded
-          End
-      :EndIf
+      →isEnded/0
+      End
     ∇
 
-    :Property Simple SpanId,TraceId,Tid ⍝EndTime,Kind,Name,ParentSpanId,SpanId,StartTime,TraceId,Tid
+    :Property Simple Scope,SpanId,TraceId,Tid ⍝EndTime,Kind,Name,ParentSpanId,SpanId,StartTime,TraceId,Tid
     :Access Public
         ∇ r←get ipa
-⍝          r←⍎(¯1 ⎕C 1↑ipa.Name),1↓ipa.Name
-          r←('SpanId' 'TraceId' 'Tid'⍳⊂ipa.Name)⊃spanId traceId tid
+          r←('Scope' 'SpanId' 'TraceId' 'Tid'⍳⊂ipa.Name)⊃scopeSpan.scope spanId traceId tid
         ∇
     :EndProperty
 
-    ∇ {evtName}AddEvent attrs;attrm;r
+    ∇ AddEvent args;attrm;r
       :Access Public Instance
       ⍝ Add a Span Event
-      ⍝ larg, mv:
-      ⍝ Attributes must be key-val pairs
-      ⍝ evtName, cv: Event name
-      ⍝ attrs, nested: Key/value pairs
-      :If 0=⎕NC'evtName'
-          evtName←''
-      :EndIf
-      attrm←toKeyValueMatrix attrs
+      ⍝ args, vov: EventName [attributes]
+      ⍝ attributes as Key/value pairs
+      args←,⊆args
+      attrm←toKeyValueMatrix 1↓args
       validateAttributes attrm
       r←⎕NS''
-      r.name←evtName
+      r.name←⊃args
       r.timeUnixNano←timeUnixNano 0
       r.attributes←toKeyValue/attrm
       ⍝r.message←val
       events,←r
     ∇
 
-    ∇ {attrs}AddLink span;r;attrm
+    ∇ AddLink args;attrm;r;span
       :Access Public Instance
+      ⍝ Add a link to another Span
+      ⍝ args, vov: Span [attributes]
+      ⍝ attributes as Key/value pairs
+      args←,⊆args
+      span←⊃args
       r←⎕NS''
       r.traceId←span.TraceId
       r.spanId←span.SpanId
       r.traceState←''
-      :If 0≠⎕NC'attrs'
-          attrm←toKeyValueMatrix attrs
-          validateAttributes attrm
-          r.attributes←toKeyValue/attrm
-      :EndIf
+      attrm←toKeyValueMatrix 1↓args
+      validateAttributes attrm
+      r.attributes←toKeyValue/attrm
       links,←r
       ⍝
     ∇
@@ -130,7 +128,7 @@
 
     ∇ SetKind ra
       :Access Public
-      :If ~ra∊SPANKIND_UNSPECIFIED SPANKIND_INTERNAL SPANKIND_SERVER SPANKIND_CLIENT SPANKIND_PRODUCER SPANKIND_CONSUMER
+      :If ~ra∊PS.API.SpanKind.(UNSPECIFIED INTERNAL SERVER CLIENT PRODUCER CONSUMER)
           'Invalid span kind'⎕SIGNAL 11
       :EndIf
       kind←ra
@@ -140,9 +138,9 @@
       :Access Public Instance
    ⍝ Sets status of the Span
    ⍝ ra, ns: 0 - OK, 1 - Error
-   ⍝ la, cv: optional status messagw
+   ⍝ la, cv: optional status message
    ⍝ Return, Span
-      :If ~status∊STATUS_CODE_OK STATUS_CODE_ERROR
+      :If ~status∊PS.API.SpanStatusCode.(OK ERROR)
           'Invalid status code'⎕SIGNAL 11
       :EndIf
       :If 2=⎕NC'msg'
@@ -155,24 +153,18 @@
       statusCode←status
     ∇
 
-    ∇ r←UpdateName n
+    ∇ r←UpdateName _name
     ⍝ Update the Span name
     ⍝ rarg, name to update
     ⍝ Return, Span
-      CheckOpen
-      name←n
-    ∇
-
-    ∇ CheckOpen
-      'Span already ended'⎕SIGNAL isEnded/800
+      →isEnded/0
+      name←_name
     ∇
 
     ∇ End;r
 ⍝   Marks the end of Span execution.
-⍝   Call to End of a Span MUST not have any effects on child spans.
-⍝   Those may still be running and can be ended later
       :Access Public Instance
-      CheckOpen
+      →isEnded/0
       endTime←Now
       isEnded←1
      
@@ -190,62 +182,12 @@
       r.status←r.⎕NS''
       r.status.code←statusCode
       r.status.message←statusMessage
-      
       scopeSpan.spans,←r
-
       ##.End ⎕THIS
-    ∇
-
-    ∇ r←Info
-      :Access Public
-      r←startTime endTime
     ∇
 
     ∇ LogError msg
       ##.LogError msg
     ∇
-
-    :Section SPANKIND
-    ⍝ Unspecified. Do NOT use as default.
-    ⍝ Implementations MAY assume SpanKind to be INTERNAL when receiving UNSPECIFIED.
-    :Field Public Shared ReadOnly SPANKIND_UNSPECIFIED←0
-
-    ⍝ Indicates that the span represents an internal operation within an application,
-    ⍝ as opposed to an operation happening at the boundaries. Default value.
-    :Field Public Shared ReadOnly SPANKIND_INTERNAL←1
-
-    ⍝ Indicates that the span covers server-side handling of an RPC or other
-    ⍝ remote network request.
-    :Field Public Shared ReadOnly SPANKIND_SERVER←2
-
-    ⍝ Indicates that the span describes a request to some remote service.
-    :Field Public Shared ReadOnly SPANKIND_CLIENT←3
-
-    ⍝ Indicates that the span describes a producer sending a message to a broker.
-    ⍝ Unlike CLIENT and SERVER, there is often no direct critical path latency relationship
-    ⍝ between producer and consumer spans. A PRODUCER span ends when the message was accepted
-    ⍝ by the broker while the logical processing of the message might span a much longer time.
-    :Field Public Shared ReadOnly SPANKIND_PRODUCER←4
-
-    ⍝ Indicates that the span describes consumer receiving a message from a broker.
-    ⍝ Like the PRODUCER kind, there is often no direct critical path latency relationship
-    ⍝ between producer and consumer spans.
-    :Field Public Shared ReadOnly SPANKIND_CONSUMER←5
-    :EndSection ⍝ SPANKIND
-
-    :Section STATUSCODE
-    ⍝ For the semantics of status codes see
-    ⍝ https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/api.md#set-status
-
-    ⍝ Default status
-    :Field Public Shared ReadOnly STATUS_CODE_UNSET←0
-
-    ⍝ The Span has been validated by an Application developer or Operator to
-    ⍝ have completed successfully.
-    :Field Public Shared ReadOnly STATUS_CODE_OK←1
-
-    ⍝ The Span contains an error.
-    :Field Public Shared ReadOnly STATUS_CODE_ERROR←2
-    :EndSection ⍝ STATUSCODE
 
 :EndClass

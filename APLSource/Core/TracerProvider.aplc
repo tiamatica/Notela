@@ -21,7 +21,6 @@
           'Constructor requires a Configuration instance'⎕SIGNAL 11
       :EndIf
       _activeSpans←⍬
-      _contexts←⍬
       _threads←⍬
       _isShuttingDown←0
      
@@ -50,10 +49,10 @@
       :EndIf
     ∇
 
-    ∇ r←GetActiveSpan tracer;mask;ind;threadSpans
+    ∇ r←GetActiveSpan tracer;threadSpans
       :Implements Method ITracerProvider.GetActiveSpan
   ⍝ Gets the span from the current context, if one exists.
-      threadSpans←{0∊⍴⍵:⍬ ⋄ (⍵.Tid∊⎕TID)/⍵}_activeSpans
+      threadSpans←⎕TID tracer.scope{0∊⍴⍵:⍬ ⋄ (⍵.(Tid Scope)∊⊂⍺)/⍵}_activeSpans
       :If 0∊⍴threadSpans
           r←⍬
       :Else
@@ -61,17 +60,14 @@
       :EndIf
     ∇
 
-⍝ Start span without setting it on context.
-  ⍝ does NOT modify the current Context.
-  ⍝ Create span and set start time
-  ⍝There MUST NOT be any API
-  ⍝for creating a Span other than with a Tracer.
     ∇ span←{context}StartSpan args;parent;ind;traceId;parentId;spanId;name;create;scopeSpan
       :Implements Method ITracerProvider.StartSpan
- ⍝ Create span with name in context.
- ⍝ If no context provided, create span in active span.
- ⍝ If no active span, create new root span.
- ⍝ Does not set the span as active (consider using StartActiveSpan for that).
+      ⍝ Start span without setting it on context.
+      ⍝ Create span and set start time
+      ⍝ Create span with name in context.
+      ⍝ If no context provided, create span in active span.
+      ⍝ If no active span, create new root span.
+      ⍝ Does not set the span as active (consider using StartActiveSpan for that).
       scopeSpan name←2↑args
      
       :If 2=⎕NC'context'
@@ -79,7 +75,7 @@
           ind←(⎕C context[;1])⍳⊂'traceparent'
       :AndIf ind≤≢context
           (traceId parentId)←¯1↓1↓'-'(≠⊆⊢)⊃context[ind;2]
-      :ElseIf ~0∊⍴parent←GetActiveSpan ⍬
+      :ElseIf ~0∊⍴parent←GetActiveSpan scopeSpan
           traceId←parent.TraceId
           parentId←parent.SpanId
       :Else
@@ -116,7 +112,7 @@
     ∇
 
     ∇ {r}←ProcessSpans flush;traces;spanBufferLength
- ⍝ Recieve spans for further processing 
+ ⍝ Recieve spans for further processing
  ⍝ force = 1 to force flush of buffers
       :If flush∨~_isShuttingDown
           _threads←(_threads∊⎕TNUMS)/_threads
@@ -153,12 +149,12 @@
     ∇
 
     ∇ HousekeepThreads;leftover
-      :If ~0∊⍴_activeSpans
-      :AndIf ~0∊⍴leftover←_activeSpans/⍨~⎕TNUMS∊⍨{⍵.Tid}_activeSpans
-          :Hold '_activeSpans'
+      :Hold '_activeSpans'
+          :If ~0∊⍴_activeSpans
+          :AndIf ~0∊⍴leftover←(~_activeSpans.Tid∊⎕TNUMS)/_activeSpans
               _activeSpans~←leftover
-          :EndHold
-      :EndIf
+          :EndIf
+      :EndHold
     ∇
 
     ∇ PostHttpJson trace;res;ts
@@ -204,6 +200,5 @@
       :Access Private Shared
       r←'0123456789ABCDEF'[size(?⍴)16]
     ∇
-
 
 :EndClass
