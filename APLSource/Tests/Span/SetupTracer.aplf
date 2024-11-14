@@ -1,0 +1,5 @@
+ r←SetupTracer;cfg;notela
+ cfg←⎕NEW #.Notela.Core.API.Configuration(,⊂'TestNotela')
+ cfg.WithExporter'##.TokenExporter'
+ cfg.BatchSize←2
+ r←⎕NEW #.Notela.Core.TracerProvider cfg

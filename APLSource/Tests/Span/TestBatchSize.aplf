@@ -1,0 +1,25 @@
+ TestBatchSize;tracer;cfg;span;trace;_;tp
+ notela←##.SetupCore
+ cfg←⎕NEW notela.Configuration(,⊂'TestAplOtel_BatchSize')
+ cfg.WithExporter'##.TokenExporter'
+ cfg.BatchSize←2
+ tp←⎕NEW #.Notela.Core.TracerProvider cfg
+ tracer←tp.GetTracer'TestBatchSize'
+
+ span←tracer.StartActiveSpan'MainRequest'
+ ⎕DL?0
+ span.End
+
+ trace←##.GetTrace 0.1
+⍝ Assert 0∊⍴trace
+
+ span←tracer.StartActiveSpan'MainRequest'
+ _←⍬
+ _,←⍎¨8⍴⊂'tracer.StartSpan'''''
+ ⎕DL?0
+ span.End
+
+ trace←##.GetTrace 0.1
+⍝ Assert 10=≢¨⊃trace.resourceSpans.scopeSpans.spans
+⍝ Assert 0=tp.Shutdown
+ ⍝

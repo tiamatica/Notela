@@ -1,0 +1,8 @@
+ Subroutine initdelay;span;span1;trace
+ ⎕DL initdelay
+ span←tracer.StartActiveSpan('TID_',⍕⎕TID)
+ span1←tracer.StartSpan('TID_',⍕⎕TID,'SUB')
+ ⎕DL 1
+⍝ Assert span≡tracer.GetActiveSpan
+ span.End
+ trace←##.GetTrace 0.1

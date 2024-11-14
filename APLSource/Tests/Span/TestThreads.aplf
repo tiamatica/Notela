@@ -1,0 +1,11 @@
+ TestThreads;tracer;span;tids;trace;notela
+ notela←##.SetupCore
+ tracer←notela.GetTracer'AplTest' '0.1.0'
+ span←tracer.StartActiveSpan'MainRoutine'
+ tids←Subroutine&¨.5 1
+ ⎕DL 1
+⍝ Assert span≡tracer.GetActiveSpan
+ span.End
+ trace←##.GetTrace 0.1
+ ⎕TSYNC tids
+⍝

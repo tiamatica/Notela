@@ -1,0 +1,22 @@
+ TestGetActiveSpan;tracer;noopSpan;span_main;ctxMain;span_sub;ctxSub;activeSpan;tracer;notela;cfg;tp
+ notela←##.SetupCore
+ tracer←notela.GetTracer'AplTest' '0.1.0'
+ noopSpan←tracer.GetActiveSpan
+⍝ Assert 1≡0∊⍴noopSpan
+
+ tp←SetupTracer
+ tracer←tp.GetTracer'TestNotela'
+ span_main←tracer.StartActiveSpan'MainRequest'
+ ctxMain←span_main.Context
+
+ span_sub←tracer.StartSpan'SubSpan'
+ ctxSub←span_sub.Context
+
+ activeSpan←tracer.GetActiveSpan
+
+⍝ Assert ctxMain≡activeSpan.Context
+⍝ Assert ctxSub≢activeSpan.Context
+ ⎕DL?0
+ span_main.End
+ trace←##.GetTrace 0.1
+ ⍝

@@ -1,0 +1,21 @@
+ TestGetSpan;tracer;span;subSpan1;subSpan2;trace;notela
+⍝ Skip'GetSpanFromHttpHeader not implemented'
+ notela←##.SetupCore
+ SetupTracer
+ tracer←notela.GetTracer'AplTest' '0.1.0'
+⍝ notela←##.SetupCore
+⍝ cfg←⎕NEW notela.Configuration(,⊂'TestGetSpan')
+⍝ cfg.WithExporter'##.TokenExporter'
+⍝ cfg.BatchSize←2
+⍝ tp←⎕NEW #.Notela.Core.TracerProvider cfg
+⍝ tracer←tp.GetTracer'AplTest' '0.1.0'
+
+ span←tracer.StartActiveSpan'MainRequest'
+ subSpan1←tracer.StartSpan'SubSpan'
+ subSpan2←tracer.StartSpan'SubSpan'
+
+⍝ Assert subSpan1≡tracer.GetSpan subSpan1.Context
+ ⎕DL?0
+ span.End
+ trace←##.GetTrace 0.1
+ ⍝
