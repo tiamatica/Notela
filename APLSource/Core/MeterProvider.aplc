@@ -2,10 +2,14 @@
     :Include Tools
 
     :Field Private Instance _cfg←⍬
+    :Field Private Instance _httpClt
     :Field Private Instance _instruments←⍬
-    :Field Private Instance _timer←⍬
+    :Field Private Instance _metrics←⍬
+    :Field Private Instance _exportedTime
+    :Field Private Instance _bufferLength
+    :Field Private Instance _isShuttingDown
 
-    ∇ make cfg;handler;ind;name;version
+    ∇ make cfg;ind;name;version;resource
       :Access Public
       :Implements Constructor
     ⍝ cfg = Configuration instance
@@ -16,145 +20,105 @@
       :Else
           'Requires a Configuration instance'⎕SIGNAL 11
       :EndIf
-      handler←(⍕⊃⊃⎕CLASS ⎕THIS),'.OnTimer'
-        _timer←⎕NEW⊂'Timer'
-⍝        _timer.FireOnce←1
-        _timer.Interval←_cfg.ExportInterval
-        _timer.onTimer←handler
-⍝        _timer.Active←0
-    ∇
-
-    ∇ OnTimer arg;tmr;provider
-      :Access Public Shared
-      tmr←⊃arg
-      provider←tmr.##
-      provider.ForceFlush 
- ⍝      ⎕←'Called on timer after "⎕EX _timer"'  
-    ∇
-
-    ∇ r←GetMeter arg;ind;name;version
-      :Implements Method IMeterProvider.GetMeter
-      name version←2↑(⊆arg),⊂''
+      _exportedTime←3⊃⎕AI
+      _bufferLength←0
+      _isShuttingDown←0
      
-      r←⎕NEW PS.Meter(_cfg name version)
+      _metrics←⎕NS''
+      _resourceMetric←_metrics.⎕NS''
+      _metrics.resourceMetrics←,_resourceMetric
+      resource←_resourceMetric.(resource←⎕NS'')
+      resource.attributes←toKeyValue/2 2⍴'service.name'_cfg.ServiceName'service.version'_cfg.ServiceVersion
+      _resourceMetric.scopeMetrics←⍬
+     
+      _httpClt←⎕NEW PS.HttpCommand
+      _httpClt.Command←'post'
+      _httpClt.URL←_cfg.OtelHttpUrlMetrics
+      _httpClt.ContentType←'application/json'
+    ∇
+
+    ∇ r←GetMeter args;ind;scopeName;scopeVersion;attrs;scopeMetric
+      :Implements Method IMeterProvider.GetMeter
+      ⍝ args = ScopeName [ScopeVersion] [attributes]
+      args←,⊆args
+      args←args,(1=≢args)/⊂_cfg.ServiceVersion
+      scopeName scopeVersion←2↑args
+      attrs←toKeyValueMatrix 2↓args
+      scopeMetric←_resourceMetric.⎕NS''
+      scopeMetric.(scope←⎕NS'')
+      scopeMetric.scope.(name version)←scopeName scopeVersion
+      scopeMetric.scope.attributes←toKeyValue/attrs
+      scopeMetric.metrics←⍬
+      _resourceMetric.scopeMetrics,←scopeMetric
+      r←⎕NEW PS.Meter(,scopeMetric)
     ∇
 
     ∇ {r}←Shutdown
       :Implements Method IMeterProvider.Shutdown
-      ⎕EX'_timer'
+      _isShuttingDown←1
       r←ForceFlush
       _instruments←⍬
     ∇
 
-    ∇ r←ForceFlush
+    ∇ {r}←ForceFlush
       :Implements Method IMeterProvider.ForceFlush
-      ExportMeters
+      ExportMetrics 1
       r←0
     ∇
 
-    ∇ r←AddView bounds
-      :Implements Method IMeterProvider.AddView
-      r←2,/bounds
+    ∇ instrument←CreateCounter(scopeMetric args)
+      :Implements Method IMeterProvider.CreateCounter
+      instrument←⎕NEW PS.Counter(scopeMetric args)
+      _instruments,←instrument
     ∇
 
-    ∇ instrument←CreateCounter(meter name)
-      :Access Public Instance
-      instrument←⎕NEW PS.Counter name
-      instrument.scope←meter.Scope
-      :Hold '_instruments'
-          _instruments,←instrument
-      :EndHold
+    ∇ instrument←CreateGauge(scopeMetric args)
+      :Implements Method IMeterProvider.CreateGauge
+      instrument←⎕NEW PS.Gauge(scopeMetric args)
+      _instruments,←instrument
     ∇
 
-    ∇ instrument←CreateGauge(meter name)
-      :Access Public Instance
-      instrument←⎕NEW PS.Gauge name
-      instrument.scope←meter.Scope
-      :Hold '_instruments'
-          _instruments,←instrument
-      :EndHold
+    ∇ instrument←CreateHistogram(scopeMetric args)
+      :Implements Method IMeterProvider.CreateHistogram
+      instrument←⎕NEW PS.Histogram(scopeMetric args)
+      _instruments,←instrument
     ∇
 
-    ∇ instrument←CreateObservableGauge(meter args)
+    ∇ ProcessMetrics
       :Access Public Instance
-      instrument←⎕NEW PS.ObservableGauge args
-      instrument.scope←meter.Scope
-      :Hold '_instruments'
-          _instruments,←instrument
-      :EndHold
+      _bufferLength+←1
+      ExportMetrics 0
     ∇
 
-    ∇ instrument←CreateHistogram(meter arg)
+    ∇ ExportMetrics flush;callspace;exporter;fn;rs;scopeMetric;scopeSpan
       :Access Public Instance
-      instrument←⎕NEW PS.Histogram   (,⊆arg)
-      instrument.scope←meter.Scope
-      :Hold '_instruments'
-          _instruments,←instrument
-      :EndHold
-    ∇
-
-    ∇ instrument←CreateUpDownCounter(meter name)
-      :Access Public Instance
-      instrument←⎕NEW PS.UpDownCounter name
-      instrument.scope←meter.Scope
-      :Hold '_instruments'
-          _instruments,←instrument
-      :EndHold
-    ∇
-
-
-    ∇ Collect
-      :Access Public Instance
-      :If 0<≢_instruments
-          ExportMeters _instruments
-      :EndIf
-    ∇
-
-    ∇ ExportMeters;callspace;exporter;fn;resource;rm;rs;scopeMetric;scopeSpan;t;metrics
-      :Access Public Instance
-    ⍝ Export to OTEL backend or log file
+      ⍝ Export metrics for further processing such as batching, sampling and/or enrichment
+      ⍝ flush = 1 to force flush buffered meters
       :If 0=≢_instruments
           :Return
       :EndIf
-      :Trap _cfg.Debug↓0
-          metrics←_instruments.Collect
-          t←⎕NS''
-          t.resourceMetrics←,rm←⎕NS''
-          rm.resource←resource←⎕NS''
-          resource.attributes←toKeyValue/2 2⍴'service.name'_cfg.ServiceName'service.version'_cfg.ServiceVersion
-          rm.scopeMetrics←,_instruments.scope{
-              scopeMetric←⎕NS''
-              scopeMetric.scope←⎕NS''
-              scopeMetric.scope.(name version)←⊃⍺
-              scopeMetric.scope.attributes←,'my.scope.attribute'toKeyValue'some scope attribute'
-⍝              scopeMetric.metrics←⊃,/⍵
-              scopeMetric.metrics←⍵~⊂⍬   
-              scopeMetric
-          }⌸metrics
-     
-          :If 0=≢_cfg.Exporters
-              PostHttpJson t
-          :EndIf
-          :For exporter :In _cfg.Exporters
-              callspace fn←exporter
-              (callspace⍎fn)t
-          :EndFor
-     
-      :EndTrap
+      :If flush∧0<_bufferLength
+      :OrIf (~_isShuttingDown)∧(_cfg.BatchSize≤_bufferLength)∧(_cfg.ExportInterval<(3⊃⎕AI)-_exportedTime)
+          :Trap _cfg.Debug↓0
+              _instruments.Collect
+              :If 0=≢_cfg.Exporters
+                  PostHttpJson _metrics
+              :EndIf
+              :For exporter :In _cfg.Exporters
+                  callspace fn←exporter
+                  (callspace⍎fn)_metrics
+              :EndFor
+              _instruments.Clear
+              _exportedTime←3⊃⎕AI
+              _bufferLength←0
+          :EndTrap
+      :EndIf
     ⍝
     ∇
 
-    ∇ r←Meters
-      :Access Public Instance
-    ⍝ Return all meters
-      r←_instruments
-    ∇
-    ∇ PostHttpJson metric;json;cmd;res;ts
-      json←⎕JSON metric
-      cmd←PS.HttpCommand.New'POST'_cfg.OtelHttpUrlMetrics
-      cmd.ContentType←'application/json'
-      cmd.Params←json
-      res←cmd.Run
+    ∇ PostHttpJson metrics;res
+      _httpClt.Params←metrics
+      res←_httpClt.Run
       LogError(200≠⊃res.HttpStatus)'Failed posting metric'
     ∇
 

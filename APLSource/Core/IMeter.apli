@@ -1,17 +1,10 @@
 :Interface IMeter
-    ∇ instrument←CreateCounter name
+    ∇ instrument←CreateCounter args
     ∇
 
-    ∇ instrument←CreateGauge name
+    ∇ instrument←CreateGauge args
     ∇
 
-    ∇ instrument←CreateObservableGauge args
+    ∇ instrument←CreateHistogram args
     ∇
-
-    ∇ instrument←CreateHistogram arg
-    ∇
-
-    ∇ instrument←CreateUpDownCounter name
-    ∇
-⍝
 :EndInterface

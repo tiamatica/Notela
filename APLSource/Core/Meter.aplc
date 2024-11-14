@@ -1,87 +1,24 @@
 :Class Meter: IMeter
-    :Include Tools
-    
-    :Field Private Instance _scopeName
-    :Field Private Instance _scopeVersion
-    :Field Private Instance _instruments
-    :Field Private Instance _isShuttingDown
-    
-    ∇ make1(cfg)
+    :Field Private Instance _scopeMetric
+
+    ∇ make1(scopeMetric)
       :Access Public
       :Implements Constructor
+      _scopeMetric←scopeMetric
     ∇
-    
-    ∇ make2(cfg name)
-      :Access Public
-      :Implements Constructor
-      init cfg
-      _scopeName←name
-    ∇
-    
-    ∇ make3(cfg name version)
-      :Access Public
-      :Implements Constructor
-      init cfg
-      _scopeName _scopeVersion←name version
-    ∇
-    ∇ unmake
-      :Access Private
-      :Implements Destructor
-    ∇
-    
-    ∇ init cfg
-      PS←(⊃⊃⎕CLASS ⎕THIS).##
-      :If 9.2=⎕NC⊂'cfg'
-      :AndIf PS.API.Configuration≡⊃⊃⎕CLASS cfg
-          _cfg←cfg
-      :Else
-          'Constructor requires a Configuration instance'⎕SIGNAL 11
-      :EndIf
-      (_scopeName _scopeVersion)←cfg.(ServiceName ServiceVersion)
-      _instruments←⍬
-      _isShuttingDown←0
-    ∇
-    
-    :Property Simple Scope
-        :Access Public
-        ∇ r←get ipa
-          r←_scopeName _scopeVersion
-        ∇
-    :EndProperty
-    
-    ∇ instrument←CreateCounter name
+
+    ∇ instrument←CreateCounter args
       :Implements Method IMeter.CreateCounter
-      instrument←##.CreateCounter ⎕THIS name
+      instrument←##.CreateCounter _scopeMetric args
     ∇
-    
-    ∇ instrument←CreateGauge name
+
+    ∇ instrument←CreateGauge args
       :Implements Method IMeter.CreateGauge
-      instrument←##.CreateGauge ⎕THIS name
+      instrument←##.CreateGauge _scopeMetric args
     ∇
-    
-    ∇ {instrument}←CreateObservableGauge args;callback;callspace
-      :Implements Method IMeter.CreateObservableGauge
-      :If 3=≢⊆args
-          callback←3⊃args
-          :If 0=10|⎕DR callback
-              callspace←⊃⎕RSI
-          :AndIf 3=callspace.⎕NC callback
-              instrument←##.CreateObservableGauge ⎕THIS (args,callspace)
-          :Else
-              'Argument must be a valid APL function'⎕SIGNAL 11
-          :EndIf
-      :Else
-          instrument←##.CreateObservableGauge ⎕THIS args
-      :EndIf
-    ∇
-    
-    ∇ instrument←CreateHistogram arg
+
+    ∇ instrument←CreateHistogram args
       :Implements Method IMeter.CreateHistogram
-      instrument←##.CreateHistogram ⎕THIS arg
-    ∇
-    
-    ∇ instrument←CreateUpDownCounter name
-      :Implements Method IMeter.CreateUpDownCounter
-      instrument←##.CreateUpDownCounter ⎕THIS name
+      instrument←##.CreateHistogram _scopeMetric args
     ∇
 :EndClass

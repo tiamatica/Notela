@@ -40,7 +40,7 @@
       scopeName scopeVersion←2↑args
       attrs←toKeyValueMatrix 2↓args
       scopeLog←_resourceLog.⎕NS''
-      scopeLog.scope←⎕NS''
+      scopeLog.(scope←⎕NS'')
       scopeLog.scope.(name version)←scopeName scopeVersion
       scopeLog.scope.attributes←toKeyValue/attrs
       scopeLog.logRecords←⍬

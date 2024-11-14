@@ -177,7 +177,7 @@
       scopeName scopeVersion←2↑args
       attrs←toKeyValueMatrix 2↓args
       scopeSpan←_resourceSpan.⎕NS''
-      scopeSpan.scope←⎕NS''
+      scopeSpan.(scope←⎕NS'')
       scopeSpan.scope.(name version)←scopeName scopeVersion
       scopeSpan.scope.attributes←toKeyValue/attrs
       scopeSpan.spans←⍬

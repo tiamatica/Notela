@@ -1,0 +1,14 @@
+:Class InstrumentNOP: IInstrument
+    ∇ Clear
+      :Implements Method IInstrument.Clear
+    ∇
+
+    ∇ Collect
+      :Implements Method IInstrument.Collect
+    ∇
+
+    ∇ Record args
+      :Implements Method IInstrument.Record
+    ∇
+:EndClass
+

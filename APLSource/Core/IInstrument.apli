@@ -1,0 +1,10 @@
+:Interface IInstrument
+    ∇ Clear
+    ∇
+
+    ∇ Collect
+    ∇
+
+    ∇ Record args
+    ∇
+:EndInterface

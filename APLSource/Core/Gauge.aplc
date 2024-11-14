@@ -1,0 +1,54 @@
+:Class Gauge: IInstrument
+    :Include Tools
+⍝
+    :Field Private Instance name
+    :Field Private Instance description
+    :Field Private Instance startTime
+    :Field Private Instance _scopeMetric
+    :Field Private Instance _metric
+
+    ∇ make2(scopeMetric args);name;description
+      :Access Public
+      :Implements Constructor
+      :If {0::1 ⋄ ~(⊃⊃⎕CLASS ⎕THIS).##.IMeterProvider∊⊃⎕CLASS ⍵}⊃⎕RSI
+          'Gauge must be created from Meter'⎕SIGNAL 11
+      :EndIf
+      _scopeMetric←scopeMetric
+      name description←2↑⊆args
+      startTime←timeUnixNano 0
+
+      _metric←_scopeMetric.⎕NS''
+      _metric.name←name
+      _metric.unit←,'1'
+      _metric.description←description
+      _metric.(gauge←⎕NS'')
+      _metric.gauge.dataPoints←⍬
+      _scopeMetric.metrics,←_metric
+      ⍝
+    ∇
+
+    ∇ Record args;value;attrs;dp
+      :Implements Method IInstrument.Record
+      value←⊃args
+      attrs←{(⊂⍋⍵)⌷⍵}toKeyValueMatrix 1↓args
+      dp←_metric.gauge.⎕NS''        
+      dp.asDouble←value
+      dp.startTimeUnixNano←startTime
+      dp.timeUnixNano←timeUnixNano 0
+      dp.attributes←toKeyValue/attrs
+      _metric.gauge.dataPoints,←dp
+      ##.ProcessMetrics
+    ∇
+
+    ∇ Clear
+      :Implements Method IInstrument.Clear
+      _metric.gauge.dataPoints←⍬
+    ∇
+
+    ∇ Collect
+      :Implements Method IInstrument.Collect
+      ⍝ nothing to do
+    ∇
+
+:EndClass
+
