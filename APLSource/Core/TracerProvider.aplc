@@ -187,8 +187,10 @@
 
     ∇ {r}←Shutdown
       :Implements Method ITracerProvider.Shutdown
-      _isShuttingDown←1
-      r←ProcessSpans 1
+      _isShuttingDown←1 
+      :If 0≠⍴_resourceSpan.scopeSpans
+        r←ProcessSpans 1  
+      :EndIf
     ∇
 
     ∇ {r}←ForceFlush

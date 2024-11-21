@@ -119,8 +119,10 @@
 
     ∇ {r}←Shutdown
       :Implements Method ILoggerProvider.Shutdown
-      _isShuttingDown←1
-      r←ProcessLogs 1
+      _isShuttingDown←1   
+      :If 0≠⍴_resourceLog.scopeLogs
+        r←ProcessLogs 1 
+      :EndIf
     ∇
 
     ∇ {r}←ForceFlush
