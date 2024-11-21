@@ -1,0 +1,31 @@
+ TestNestedSpan;tracer;span;trace;spans;sp;childSpan;csp;scopeSpans;parent;child;cS
+ CleanupTracer
+ cfg←⎕NEW ##.Notela.Configuration(,⊂'TestTraces')
+ cfg.WithExporter'##.TokenExporter'
+ cfg.BatchSize←3
+ ##.Notela.Start cfg
+ tracer←##.Notela.GetTracer'AplTest' '0.1.0'
+ span←tracer.StartActiveSpan'MainRequest'
+ ⎕DL?0
+ childSpan←tracer.StartSpan'SubRoutine'
+ cS←tracer.StartSpan'SubRoutine1'
+ ⎕DL?0
+ childSpan.End
+ ⎕DL?0
+ cS.End
+ ⎕DL?0
+ span.End
+
+ trace←##.GetTrace 0.1
+ Assert 1=≢trace.resourceSpans
+ Assert 1=≢trace.⎕NL⍳9
+ spans←(⊃trace.resourceSpans).(⊃scopeSpans).spans
+ Assert 3=≢spans
+ child←(⊃⍸~(⊂⊂'null')≡¨spans.parentSpanId)⊃spans
+ parent←(⍸(⊂⊂'null')≡¨spans.parentSpanId)⊃spans
+ Assert ∧/32=≢¨(parent child).traceId
+ Assert parent.traceId≡child.traceId
+ Assert parent.spanId≡child.parentSpanId
+⍝ TracerProvider should post trace to collector at this point
+⍝ parent← (csp.parentSpanId sp.parentSpanId∊⊂⊂'null')/csp sp
+⍝ child← (~csp.parentSpanId sp.parentSpanId∊⊂⊂'null')/csp sp

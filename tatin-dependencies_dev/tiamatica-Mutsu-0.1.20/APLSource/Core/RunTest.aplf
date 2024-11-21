@@ -1,0 +1,36 @@
+ r←cfg RunTest(testspace testfn);res;⎕TRAP;dmx;∆ST;∆DMX;toString;getMessage;retval;expr;valens;execFn
+⍝ Run test testfn using configuration cfg
+
+ r←NewTestcase testfn
+ r.(File Line)←(⊂4 5)⌷GetObjectInfo(⍕testspace),'.',testfn
+
+ ∆DMX←0
+ ∆ST←0⍴⊂''
+
+ ⎕TRAP←(~cfg.Debug)/(98 'C' '→Fail')((0 1000)'E'((⍕⎕THIS),'.ErrorHandler'))
+ retval valens←10 11 testspace.⎕ATX testfn
+ expr←valens{⍺=0:⍵ ⋄ ⍺=1:⍵,'⍬' ⋄ '⍬',⍵,'⍬'}testfn
+ :If retval=0
+    testspace.⍎expr
+ :ElseIf cfg.SuccessCode≢testspace.⍎expr
+     r.ResultCode←API.TESTRESULT.FAIL
+ :EndIf
+ :Return
+
+Fail:
+ dmx←⎕DMX
+ toString←{1↓⊃,/(⎕UCS 10),¨⍵}
+ getMessage←{~0∊⍴⍵.Message:⍵.Message ⋄ 1↓∊' ',¨2↑⍵.DM}
+ ⎕TRAP←0⍴⎕TRAP
+ r.ResultCode←dmx.ENX    ⍝ API.TESTRESULT
+ r.Message←getMessage dmx
+ :If r.ResultCode=API.TESTRESULT.FAIL
+     r.Type←dmx.EM
+     r.Details←toString dmx.DM
+ :ElseIf r.ResultCode=API.TESTRESULT.ERROR
+     r.Message←getMessage ∆DMX
+     r.Details←toString ∆DMX.DM,∆ST
+     r.Type←∆DMX.EM
+ :EndIf
+
+⍝

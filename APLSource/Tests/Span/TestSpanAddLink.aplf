@@ -1,0 +1,23 @@
+ TestSpanAddLink;tracer;span;spanSub1;spanSub2;span2;spanSub3;trace;l;spans;links;spanId;traceId;SpanId;TraceId;vals;child
+ CleanupTracer
+ cfg←⎕NEW ##.Notela.Configuration(,⊂'TestTraces')
+ cfg.WithExporter'##.TokenExporter'
+ cfg.BatchSize←2
+ ##.Notela.Start cfg
+ tracer←##.Notela.GetTracer'Notela' '0.1.0'
+ span←tracer.StartActiveSpan'MainRequest'
+ spanSub1←tracer.StartSpan'SubSpan1'
+ spanSub2←tracer.StartSpan'SubSpan2'
+ span2←tracer.StartActiveSpan'MainRequest2'
+ spanSub3←tracer.StartSpan'SubSpan3'
+
+ spanSub3.AddLink spanSub2
+ ⎕DL?0
+ span.End
+ spanSub3.End
+
+ trace←##.GetTrace 0.1
+ l←⊃⊃(⊃trace.resourceSpans.scopeSpans.(2⊃spans)).links
+ Assert l.(spanId traceId)≡spanSub2.(SpanId TraceId)
+ Assert 0∊⍴l.traceState
+ ⍝

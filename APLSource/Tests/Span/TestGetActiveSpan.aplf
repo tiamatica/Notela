@@ -1,22 +1,25 @@
- TestGetActiveSpan;tracer;noopSpan;span_main;ctxMain;span_sub;ctxSub;activeSpan;tracer;notela;cfg;tp
- notela←##.SetupCore
- tracer←notela.GetTracer'AplTest' '0.1.0'
- noopSpan←tracer.GetActiveSpan
-⍝ Assert 1≡0∊⍴noopSpan
+ TestGetActiveSpan;tracer;noopSpan;span_main;ctxMain;ctxSub;activeSpan;tracer;notela;subSpan;subSpan1
+ CleanupTracer
+ cfg←⎕NEW ##.Notela.Configuration(,⊂'TestTraces')
+ cfg.WithExporter'##.TokenExporter'
+ cfg.BatchSize←3
+ ##.Notela.Start cfg
 
- tp←SetupTracer
- tracer←tp.GetTracer'TestNotela'
- span_main←tracer.StartActiveSpan'MainRequest'
+ tracer←##.Notela.GetTracer'TestTraces'
+ span_main←tracer.StartActiveSpan'MainInTestGetActiveSpan'
  ctxMain←span_main.Context
 
- span_sub←tracer.StartSpan'SubSpan'
- ctxSub←span_sub.Context
+ subSpan←tracer.StartSpan'SubSpan'
+ subSpan1←tracer.StartSpan'SubSpan1'
+ ctxSub←subSpan.Context
 
  activeSpan←tracer.GetActiveSpan
 
-⍝ Assert ctxMain≡activeSpan.Context
-⍝ Assert ctxSub≢activeSpan.Context
+ Assert ctxMain≡activeSpan.Context
+ Assert ctxSub≢activeSpan.Context
  ⎕DL?0
+ subSpan.End
+ subSpan1.End
  span_main.End
  trace←##.GetTrace 0.1
  ⍝

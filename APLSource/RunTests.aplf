@@ -1,0 +1,10 @@
+RunTests debug;cfg;batch;debug
+Core.HttpCommand←HttpCommand
+cfg←Mutsu.NewConfiguration
+cfg.TestSpaces←Tests
+cfg.SetupIncludePattern←'^Setup'
+cfg.TestIncludePattern←'^Test'
+cfg.CleanupIncludePattern←'^Cleanup'
+cfg.Debug←debug
+Mutsu.RunTests cfg
+⍝

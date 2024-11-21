@@ -1,0 +1,13 @@
+ TestSpanAttributesDuplicates;tracer;span;trace;t;spans;attributes;key;value;vals
+ CleanupTracer
+ cfg←⎕NEW ##.Notela.Configuration(,⊂'TestTraces')
+ cfg.WithExporter'##.TokenExporter'
+ cfg.BatchSize←1
+ ##.Notela.Start cfg
+ tracer←##.Notela.GetTracer'Notela' '0.1.0'
+ span←tracer.StartActiveSpan'MainRequest'
+ (11 Try span.SetAttributes)('exception.escape' 0)('exception.escape' 'DivByZero')
+ ⎕DL?0
+ span.End
+ trace←##.GetTrace 0.1
+⍝

@@ -1,0 +1,20 @@
+ TestSimpleSpan;tracer;span;trace;spans;sp;scopeSpans
+ CleanupTracer
+ cfg←⎕NEW ##.Notela.Configuration(,⊂'TestTraces')
+ cfg.WithExporter'##.TokenExporter'
+ cfg.BatchSize←1
+ ##.Notela.Start cfg
+ tracer←##.Notela.GetTracer'TestSimpleSpan'
+ span←tracer.StartActiveSpan'MainRequest'
+ ⎕DL?0
+ span.End
+
+ trace←##.GetTrace 0.1
+ Assert 1=≢trace.resourceSpans
+ spans←(⊃trace.resourceSpans).(⊃scopeSpans).spans
+ Assert 1=≢spans
+ sp←⊃spans
+ Assert sp.parentSpanId≡⊂'null'
+ Assert 32=≢sp.traceId
+ Assert 16=≢sp.spanId
+⍝ TracerProvider should post trace to collector at this point
