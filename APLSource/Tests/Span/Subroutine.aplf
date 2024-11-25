@@ -1,8 +1,11 @@
  Subroutine initdelay;span;span1;trace
  ⎕DL initdelay
  span←tracer.StartActiveSpan('TID_',⍕⎕TID)
+ ⎕←'Span in new thread' span.SpanId
  span1←tracer.StartSpan('TID_',⍕⎕TID,'SUB')
- ⎕DL 1
-⍝ Assert span≡tracer.GetActiveSpan
+  ⎕←'Span in new thread' span1.SpanId
+⎕DL 1
+ Assert span≡tracer.GetActiveSpan
+ span1.End
  span.End
  trace←##.GetTrace 0.1
