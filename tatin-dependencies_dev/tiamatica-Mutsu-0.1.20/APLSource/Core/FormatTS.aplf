@@ -1,2 +1,0 @@
-r←FormatTS ts
-r←↑'%ISO%'(1200⌶)1 ⎕DT ⊂ts

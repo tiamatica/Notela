@@ -13,8 +13,8 @@
 
  trace←##.GetTrace 0.1
  t←⊃trace.resourceSpans.scopeSpans
- Assert'exception.type' 'exception.escape' 'exception.message'≡⊃⊃t.(spans).(attributes).key
- Assert'stringValue' 'intValue' 'stringValue'≡⊃¨⊃t.(⊃spans).(attributes).value.⎕NL ¯2
+ Assert'exception.type' 'exception.escape' 'exception.message'≡⊃⊃t.spans.attributes.key
+ Assert'stringValue' 'intValue' 'stringValue'≡⊃¨⊃t.(⊃spans).attributes.value.⎕NL ¯2
  vals←⊃⊃t.spans.attributes.value
  Assert'OSError' 0 'DivByZero'≡vals.⍎(⊃¨vals.⎕NL ¯2)
 ⍝

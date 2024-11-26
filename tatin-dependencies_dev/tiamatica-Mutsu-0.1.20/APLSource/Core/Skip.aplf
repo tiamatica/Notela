@@ -1,1 +1,0 @@
- Skip←{~0∊⍴⍵:⎕SIGNAL⊂('EN' 98)('ENX' 2)('Message' ⍵)}

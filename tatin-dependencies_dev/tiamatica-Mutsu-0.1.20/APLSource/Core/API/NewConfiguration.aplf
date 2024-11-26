@@ -1,3 +1,0 @@
- r←NewConfiguration
-⍝ Create configuration object for running tests
- r←##.NewConfiguration
