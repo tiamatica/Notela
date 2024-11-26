@@ -120,6 +120,7 @@
 
     ∇ {r}←Shutdown
       :Implements Method ILoggerProvider.Shutdown
+      _isShuttingDown←1 
       r←ProcessLogs 1 
     ∇
 

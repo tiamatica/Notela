@@ -187,8 +187,9 @@
     ∇
 
     ∇ {r}←Shutdown
-      :Implements Method ITracerProvider.Shutdown
-      r←ProcessSpans 1  
+      :Implements Method ITracerProvider.Shutdown 
+      _isShuttingDown←1
+      r←ProcessSpans 1 
     ∇
 
     ∇ {r}←ForceFlush
