@@ -114,7 +114,8 @@
     ∇ {r}←ProcessSpans flush;traces;spanBufferLength
  ⍝ Recieve spans for further processing
  ⍝ force = 1 to force flush of buffers
-      :If flush∨~_isShuttingDown
+      :If flush∨~_isShuttingDown 
+      :AndIf 0≠⍴_resourceSpan.scopeSpans
           _threads←(_threads∊⎕TNUMS)/_threads
           spanBufferLength←+/≢¨_resourceSpan.scopeSpans.spans
           :If (flush∧0<spanBufferLength)∨(_cfg.BatchSize≤spanBufferLength)
@@ -127,7 +128,7 @@
           :EndIf
           :If flush
               ⎕TSYNC _threads
-          :EndIf
+          :EndIf 
       :EndIf
       r←0
     ∇
@@ -187,10 +188,7 @@
 
     ∇ {r}←Shutdown
       :Implements Method ITracerProvider.Shutdown
-      _isShuttingDown←1 
-      :If 0≠⍴_resourceSpan.scopeSpans
-        r←ProcessSpans 1  
-      :EndIf
+      r←ProcessSpans 1  
     ∇
 
     ∇ {r}←ForceFlush

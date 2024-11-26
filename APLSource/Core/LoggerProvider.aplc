@@ -77,7 +77,8 @@
     ∇ {r}←ProcessLogs flush;bufferLength;logs
       ⍝ Recieve logs for further processing such as batching, sampling and/or enrichment
       ⍝ flush = 1 to force flush buffered logs
-      :If flush∨~_isShuttingDown
+      :If flush∨~_isShuttingDown 
+      :AndIf 0≠⍴_resourceLog.scopeLogs
           bufferLength←+/≢¨_resourceLog.scopeLogs.logRecords
       :AndIf (flush∧0<bufferLength)∨(_cfg.BatchSize≤bufferLength)
           :Hold '_logs'
@@ -119,10 +120,7 @@
 
     ∇ {r}←Shutdown
       :Implements Method ILoggerProvider.Shutdown
-      _isShuttingDown←1   
-      :If 0≠⍴_resourceLog.scopeLogs
-        r←ProcessLogs 1 
-      :EndIf
+      r←ProcessLogs 1 
     ∇
 
     ∇ {r}←ForceFlush
