@@ -1,0 +1,20 @@
+ TestSpanSetKind;tracer;span;span1;span2;trace
+ CleanupTracer
+ cfg←⎕NEW ##.Notela.Configuration(,⊂'TestTraces')
+ cfg.WithExporter'##.TokenExporter'
+ cfg.BatchSize←3
+ ##.Notela.Start cfg
+ tracer←##.Notela.GetTracer'Notela' '0.1.0'
+ span←tracer.StartActiveSpan'MainRequest'
+ span1←tracer.StartSpan'SubSpan1'
+ span2←tracer.StartSpan'SubSpan2'
+ span.SetKind #.Notela.Core.API.SpanKind.SERVER
+ span1.SetKind 2
+ ⎕DL?0
+ span.End
+ span1.End
+ span2.End
+ trace←##.GetTrace 0.1
+ Assert∧/2 2 1=⊃⊃trace.resourceSpans.scopeSpans.spans.kind
+ (11 Try span2.SetKind)10
+⍝

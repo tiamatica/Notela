@@ -1,0 +1,23 @@
+ TestSpanSetStatus;tracer;span;spanSub1;spanSub2;trace;spans;status;code;message
+ CleanupTracer
+ cfg←⎕NEW ##.Notela.Configuration(,⊂'TestTraces')
+ cfg.WithExporter'##.TokenExporter'
+ cfg.BatchSize←3
+ ##.Notela.Start cfg
+ tracer←##.Notela.GetTracer'Notela' '0.1.0'
+ span←tracer.StartActiveSpan'MainRequest'
+ spanSub1←tracer.StartSpan'SubSpan1'
+ spanSub2←tracer.StartSpan'SubSpan2'
+
+ span.SetStatus #.Notela.Core.API.SpanStatusCode.OK
+ 'Error msg'spanSub1.SetStatus #.Notela.Core.API.SpanStatusCode.ERROR
+
+ (11 Try spanSub2.SetStatus)0
+ ⎕DL?0
+ spanSub1.End
+ spanSub2.End
+ span.End
+
+ trace←##.GetTrace 0.1
+ Assert(2,⊂'Error msg')(0 '')(1 '')≡⊃⊃trace.resourceSpans.scopeSpans.(spans).status.(code message)
+ ⍝

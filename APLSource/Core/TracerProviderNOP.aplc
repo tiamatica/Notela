@@ -22,7 +22,7 @@
     ∇
 
     ∇ r←GetActiveSpan tracer
-      :Implements Method ITracerProvider.GetActiveSpan
+      :Implements Method ITracerProvider.GetActiveSpan  
       r←⍬
     ∇
 

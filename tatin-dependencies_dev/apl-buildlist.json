@@ -1,0 +1,14 @@
+{
+  packageID: [
+    "tiamatica-Mutsu-0.1.20",
+    "dyalog-HttpCommand-5.8.0",
+  ],
+  principal: [
+    1,
+    0,
+  ],
+  url: [
+    "https://tatin.dev/",
+    "https://tatin.dev/",
+  ],
+}

@@ -1,0 +1,20 @@
+ TestGetSpan;tracer;span;subSpan1;subSpan2;subSpan3;trace;notela;spans;sp
+ CleanupTracer
+ cfg←⎕NEW ##.Notela.Configuration(,⊂'TestTraces')
+ cfg.WithExporter'##.TokenExporter'
+ cfg.BatchSize←3
+ ##.Notela.Start cfg
+ tracer←##.Notela.GetTracer'AplTest' '0.1.0'
+ span←tracer.StartActiveSpan'MainRequest'
+ subSpan1←tracer.StartSpan'SubSpan1'
+ subSpan2←tracer.StartSpan'SubSpan2'
+ ⎕DL?0
+ span.End
+ subSpan1.End
+ subSpan2.End
+ trace←##.GetTrace 0.1
+ spans←(⊃trace.resourceSpans).(⊃scopeSpans).spans
+ Assert 3=≢spans
+ Assert 'SubSpan1'≡⊃⊃trace.resourceSpans.scopeSpans.(2⊃spans).name
+ Assert 'SubSpan2'≡⊃⊃trace.resourceSpans.scopeSpans.(3⊃spans).name
+ ⍝

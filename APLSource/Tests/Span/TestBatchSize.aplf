@@ -1,0 +1,25 @@
+ TestBatchSize;tracer;cfg;span;trace;_;subSpan;subSpan1
+ CleanupTracer
+ cfg←⎕NEW ##.Notela.Configuration(,⊂'TestTraces')
+ cfg.WithExporter'##.TokenExporter'
+ cfg.BatchSize←3
+ ##.Notela.Start cfg
+
+ tracer←##.Notela.GetTracer'TestTraces'
+ span←tracer.StartActiveSpan'MainTestBatchSize'
+ ⎕DL?0
+ trace←##.GetTrace 0.1
+ Assert 0∊⍴trace
+ span.End
+
+
+ span←tracer.StartActiveSpan'MainRequest'
+ subSpan←tracer.StartSpan 'testBatchSize'
+ subSpan1←tracer.StartSpan 'testBatchSize1'
+ ⎕DL?0
+ subSpan.End
+ subSpan1.End
+ span.End
+ trace←##.GetTrace 0.1
+ Assert ∨/3=≢¨⊃trace.resourceSpans.scopeSpans.spans
+ ⍝

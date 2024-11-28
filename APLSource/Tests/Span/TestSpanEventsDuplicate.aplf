@@ -1,0 +1,12 @@
+ TestSpanEventsDuplicate;tracer;span;trace
+ CleanupTracer
+ cfg←⎕NEW ##.Notela.Configuration(,⊂'TestTraces')
+ cfg.WithExporter'##.TokenExporter'
+ cfg.BatchSize←1
+ ##.Notela.Start cfg
+ tracer←##.Notela.GetTracer'Notela' '0.1.0'
+ span←tracer.StartActiveSpan'MainRequest'
+ (6 Try span.AddEvent)('exception.escape' 0)('exception.escape' 'DivByZero')
+ ⎕DL?0
+ span.End
+ ⍝
