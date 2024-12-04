@@ -1,0 +1,32 @@
+ TestHistogram;meter;mm;mg;bound
+ CleanupMeter
+ cfg←⎕NEW ##.Notela.Configuration('TestMeter' '0.1.0')
+ cfg.ExportInterval←0
+ cfg.WithExporter'##.TokenExporter'
+ cfg.BatchSize←6
+ ##.Notela.Start cfg
+ meter←##.Notela.GetMeter'TestMeter' '0.1.0'
+ bound←0 5 10 30 100 1000
+
+ mm←meter.CreateHistogram'apl.histo' 'test.histogram' bound
+ mm.Record 4 'http.method' 'GET'
+ mm.Record 5 'http.method' 'POST'
+ mm.Record 12 'http.method' 'GET'
+ mm.Record 13 'http.method' 'POST'
+ mm.Record 224 'http.method' 'GET'
+ mm.Record 11 'http.method' 'POST'
+ mtr←##.GetTrace 0.1
+ mh←(⊃mtr.resourceMetrics).(⊃scopeMetrics).(⊃metrics)
+ Assert'apl.histo'≡mh.name
+ Assert 240=mh.histogram.(⊃dataPoints).sum
+ Assert 29=mh.histogram.(2⊃dataPoints).sum
+ Assert 3=mh.histogram.(⊃dataPoints).count
+ Assert 4=mh.histogram.(⊃dataPoints).min
+ Assert 224=mh.histogram.(⊃dataPoints).max
+ Assert 2=≢mh.histogram.(dataPoints)
+ Assert 6=≢mh.histogram.(⊃dataPoints).explicitBounds
+ Assert 'GET'≡mh.histogram.(⊃dataPoints).(⊃attributes).value.stringValue
+ Assert 'POST'≡mh.histogram.(2⊃dataPoints).(⊃attributes).value.stringValue
+ Assert'http.method'≡mh.histogram.(⊃dataPoints).(⊃attributes).key
+
+ ⍝

@@ -1,2 +1,3 @@
  TokenExporter trace
- trace ⎕TPUT 9539
+ ref←⎕NS trace
+ ref ⎕TPUT 9539

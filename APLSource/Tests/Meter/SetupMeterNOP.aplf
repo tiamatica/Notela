@@ -1,0 +1,3 @@
+ SetupMeterNOP;cfg
+ cfg←⎕NEW ##.Notela.Configuration('' '')
+ ##.Notela.Start cfg

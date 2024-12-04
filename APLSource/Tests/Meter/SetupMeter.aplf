@@ -1,0 +1,5 @@
+ SetupMeter;cfg
+ cfg←⎕NEW ##.Notela.Configuration('TestMeter' '0.1.0')
+ cfg.ExportInterval←10000
+ cfg.WithExporter'##.TokenExporter'
+ ##.Notela.Start cfg
