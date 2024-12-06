@@ -1,5 +1,5 @@
- TestSpanEventsDuplicate;tracer;span;trace
- CleanupTracer
+ TestSpanEventsDuplicate;tracer;span;trace;cfg
+ ##.Reset
  cfg←⎕NEW ##.Notela.Configuration(,⊂'TestTraces')
  cfg.WithExporter'##.TokenExporter'
  cfg.BatchSize←1

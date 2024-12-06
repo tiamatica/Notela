@@ -1,5 +1,5 @@
- TestNestedSpan;tracer;span;trace;spans;sp;childSpan;csp;scopeSpans;parent;child;cS
- CleanupTracer
+ TestNestedSpan;tracer;span;trace;spans;sp;childSpan;csp;scopeSpans;parent;child;cS;cfg
+ ##.Reset
  cfg←⎕NEW ##.Notela.Configuration(,⊂'TestTraces')
  cfg.WithExporter'##.TokenExporter'
  cfg.BatchSize←3

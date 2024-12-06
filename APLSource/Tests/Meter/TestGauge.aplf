@@ -1,5 +1,5 @@
- TestGauge;meter;mm;mg
- CleanupMeter
+ TestGauge;meter;mm;mg;cfg;mtr
+ ##.Reset
  cfg←⎕NEW ##.Notela.Configuration('TestMeter' '0.1.0')
  cfg.ExportInterval←0
  cfg.WithExporter'##.TokenExporter'

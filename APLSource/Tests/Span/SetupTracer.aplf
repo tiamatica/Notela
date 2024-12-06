@@ -1,5 +1,2 @@
- SetupTracer;cfg
- cfg←⎕NEW ##.Notela.Configuration(,⊂'TestTraces')
- cfg.WithExporter'##.TokenExporter'
- cfg.BatchSize←3
- ##.Notela.Start cfg
+ SetupTracer
+ ##.SetupCore
