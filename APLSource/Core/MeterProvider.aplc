@@ -98,7 +98,7 @@
           :Return
       :EndIf
       :If flush∧0<_bufferLength
-      :OrIf (~_isShuttingDown)∧(_cfg.BatchSize≤_bufferLength)∧(_cfg.ExportInterval<(3⊃⎕AI)-_exportedTime)
+      :OrIf (~_isShuttingDown)∧(_cfg.BatchSize≤_bufferLength)∧(_cfg.ExportInterval≤(3⊃⎕AI)-_exportedTime)
           :Trap _cfg.Debug↓0
               _instruments.Collect
               :If 0=≢_cfg.Exporters

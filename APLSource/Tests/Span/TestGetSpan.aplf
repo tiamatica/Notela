@@ -1,5 +1,5 @@
- TestGetSpan;tracer;span;subSpan1;subSpan2;subSpan3;trace;notela;spans;sp
- CleanupTracer
+ TestGetSpan;tracer;span;subSpan1;subSpan2;subSpan3;trace;notela;spans;sp;cfg
+ ##.Reset
  cfg←⎕NEW ##.Notela.Configuration(,⊂'TestTraces')
  cfg.WithExporter'##.TokenExporter'
  cfg.BatchSize←3

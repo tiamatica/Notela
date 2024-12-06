@@ -35,7 +35,7 @@
     ∇ Record arg;value;attrs
       :Implements Method IInstrument.Record
       value←⊃arg
-      attrs←{(⊂⍋⍵)⌷⍵}NamesValuesAsMatrix 1↓arg
+      attrs←{(⊂⍋⍵)⌷⍵}toKeyValueMatrix 1↓arg
       values⍪←value attrs
       ##.ProcessMetrics
     ∇
@@ -56,11 +56,11 @@
               dp.explicitBounds←bounds
               dp.min←⌊/⍵
               dp.max←⌈/⍵
-              dp.attributes←ToKeyValue/⊃⍺
+              dp.attributes←toKeyValue/⊃⍺
               dp
           }⌸values[;1]
           _metric.histogram.dataPoints.startTimeUnixNano←⊂startTime
-          _metric.histogram.dataPoints.timeUnixNano←⊂startTime←TimeUnixNano 0
+          _metric.histogram.dataPoints.timeUnixNano←⊂startTime←timeUnixNano 0
           values←0⌿values
       :EndIf
     ∇

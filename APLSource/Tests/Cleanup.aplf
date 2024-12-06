@@ -1,0 +1,7 @@
+ Cleanup
+ Notela.Stop
+ ⎕TGET ⎕TPOOL∩∆TP+0.5
+ :Trap 0
+     ∆TP ⎕TALLOC ¯1
+ :EndTrap
+ ⎕EX'∆TP'

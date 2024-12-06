@@ -1,3 +1,4 @@
  SetupCore
  #.Notela.Core.HttpCommand←#.Notela.HttpCommand
  Notela←#.Notela.Core.API
+ ∆TP←⎕TALLOC 1 'Notela'

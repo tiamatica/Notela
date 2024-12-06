@@ -1,2 +1,2 @@
-r←GetTrace timeout
-r←timeout ⎕TGET 9539
+ r←GetTrace timeout
+ r←timeout ⎕TGET ∆TP+0.5
