@@ -1,0 +1,17 @@
+ RunTests;cfg;cfgMutsu
+
+ cfg←⎕SE.Cider.CreateOpenParms ⍬
+ cfg.batch←1
+ cfg.folder←'.'
+ ⎕SE.Cider.OpenProject cfg
+
+ :Trap 0
+     cfgMutsu←#.Notela.Mutsu.NewConfiguration
+     cfgMutsu.TestSpaces←#.Notela.Tests
+     cfgMutsu.ReportType←#.Notela.Mutsu.REPORTTYPE.GITHUB
+     #.Notela.Mutsu.RunTests cfgMutsu
+ :Else
+     ⎕←↑⎕DM
+     ⎕OFF 1
+ :EndTrap
+ ⎕OFF 0
