@@ -1,4 +1,4 @@
-:Class Span
+:Class Span: ISpan
     :Include Tools
 
     :Field Private Instance name
@@ -60,7 +60,7 @@
     :EndProperty
 
     ∇ AddEvent args;attrm;r
-      :Access Public Instance
+      :Implements Method ISpan.AddEvent
       ⍝ Add a Span Event
       ⍝ args, vov: EventName [attributes]
       ⍝ attributes as Key/value pairs
@@ -76,7 +76,7 @@
     ∇
 
     ∇ AddLink args;attrm;r;span
-      :Access Public Instance
+      :Implements Method ISpan.AddLink
       ⍝ Add a link to another Span
       ⍝ args, vov: Span [attributes]
       ⍝ attributes as Key/value pairs
@@ -93,22 +93,20 @@
       ⍝
     ∇
 
-  ⍝ Returns the context (HTTP header) associated with this Span.
-    :Property Simple Context
-    :Access Public Instance
-  ⍝ Returns Context
-        ∇ r←get ipa
-          r←1 2⍴'traceparent'('00-',traceId,'-',spanId,'-01')
-        ⍝r⍪←'tracecontext' ''
-        ∇
-    :EndProperty
+
+    ∇ r←GetHttpContext
+      :Implements Method ISpan.GetHttpContext
+     ⍝ Returns the context (HTTP header) associated with this Span.
+      r←1 2⍴'traceparent'('00-',traceId,'-',spanId,'-01')
+     ⍝r⍪←'tracecontext' ''
+    ∇
 
     ∇ r←GetAttribute attr;lookup
-      :Access Public Instance
-   ⍝ Get a single Attribute with the
-   ⍝ key passed as argument.
-   ⍝ ra, cv: attribute key
-   ⍝ Return, Attribute value
+      :Implements Method ISpan.GetAttribute
+     ⍝ Get a single Attribute with the
+     ⍝ key passed as argument.
+     ⍝ attr, cv: attribute key
+     ⍝ Return, Attribute value
       lookup←attributes[;1]⍳⊆attr
       :If lookup≤≢attributes
           r←⊃attributes[lookup;2]
@@ -117,10 +115,10 @@
       :EndIf
     ∇
 
-    ∇ r←SetAttributes attrs;attrm
-      :Access Public Instance
-   ⍝ Sets Attributes to the Span
-   ⍝ ra, nv: 2-elements key val pairs
+    ∇ SetAttributes attrs;attrm
+      :Implements Method ISpan.SetAttributes
+     ⍝ Sets Attributes to the Span
+     ⍝ ra, nv: 2-elements key val pairs
       attrm←toKeyValueMatrix attrs
       validateAttributes attributes⍪attrm
       attributes⍪←attrm
@@ -163,7 +161,7 @@
 
     ∇ End;r
 ⍝   Marks the end of Span execution.
-      :Access Public Instance
+      :Implements Method ISpan.End
       →isEnded/0
       endTime←Now
       isEnded←1
