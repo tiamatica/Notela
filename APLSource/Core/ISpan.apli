@@ -1,0 +1,20 @@
+:Interface ISpan
+    ∇ AddEvent args
+    ∇
+
+    ∇ AddLink args
+    ∇
+
+    ∇ End
+    ∇
+
+    ∇ r←GetAttribute attr
+    ∇
+
+    ∇ SetAttributes attrs
+    ∇
+
+    ∇ r←GetHttpContext
+    ∇
+
+:EndInterface

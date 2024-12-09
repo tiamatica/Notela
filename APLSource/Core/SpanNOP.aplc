@@ -1,21 +1,25 @@
-:Class SpanNOP
+:Class SpanNOP: ISpan
 
     ∇ make
       :Access Public
       :Implements Constructor
     ∇
-    ∇ r←GetAttribute attr
-      :Access Public Instance
+    ∇ AddEvent args
+      :Implements Method ISpan.AddEvent
     ∇
-    ∇ r←SetAttributes attrs
-    ∇
-    ∇ SetKind ra
-    ∇
-    ∇ r←{msg}SetStatus status
-    ∇
-    ∇ CheckOpen
+    ∇ AddLink attr
+      :Implements Method ISpan.AddLink
     ∇
     ∇ End
-      :Access Public Instance
+      :Implements Method ISpan.End
+    ∇
+    ∇ r←GetAttribute attr
+      :Implements Method ISpan.GetAttribute
+    ∇
+    ∇ SetAttributes attrs
+      :Implements Method ISpan.SetAttributes
+    ∇
+    ∇ r←GetHttpContext
+      :Implements Method ISpan.GetHttpContext
     ∇
 :EndClass

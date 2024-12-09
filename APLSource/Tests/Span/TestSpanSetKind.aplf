@@ -8,13 +8,16 @@
  span←tracer.StartActiveSpan'MainRequest'
  span1←tracer.StartSpan'SubSpan1'
  span2←tracer.StartSpan'SubSpan2'
- span.SetKind #.Notela.Core.API.SpanKind.SERVER
- span1.SetKind 2
+ span.Kind←##.Notela.SpanKind.SERVER
+ span1.Kind←2
+ span2.Kind←10
+ Assert span2.Kind≡##.Notela.SpanKind.INTERNAL
  ⎕DL?0
  span.End
  span1.End
  span2.End
  trace←##.GetTrace 0.1
  Assert∧/2 2 1=⊃⊃trace.resourceSpans.scopeSpans.spans.kind
- (11 Try span2.SetKind)10
+ span2.Kind←10
+ Assert span2.Kind≡##.Notela.SpanKind.INTERNAL
 ⍝

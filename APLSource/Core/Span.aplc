@@ -1,4 +1,4 @@
-:Class Span
+:Class Span: ISpan
     :Include Tools
 
     :Field Private Instance name
@@ -52,15 +52,35 @@
       End
     ∇
 
-    :Property Simple Scope,SpanId,TraceId,Tid ⍝EndTime,Kind,Name,ParentSpanId,SpanId,StartTime,TraceId,Tid
+    :Property Simple Kind,Name,Scope,SpanId,StatusCode,StatusMessage,TraceId,Tid ⍝EndTime,Kind,ParentSpanId,SpanId,StartTime,TraceId,Tid
     :Access Public
         ∇ r←get ipa
-          r←('Scope' 'SpanId' 'TraceId' 'Tid'⍳⊂ipa.Name)⊃scopeSpan.scope spanId traceId tid
+          r←('Kind' 'Name' 'Scope' 'SpanId' 'StatusCode' 'StatusMessage' 'TraceId' 'Tid'⍳⊂ipa.Name)⊃kind name scopeSpan.scope spanId statusCode statusMessage traceId tid
+        ∇
+        ∇ set ipa
+          →isEnded/0
+          :Select ipa.Name
+          :Case 'Name'
+              name←ipa.NewValue
+          :Case 'Kind'
+              :If ipa.NewValue∊PS.API.SpanKind.(UNSPECIFIED INTERNAL SERVER CLIENT PRODUCER CONSUMER)
+                  kind←ipa.NewValue
+              :EndIf
+          :Case 'StatusCode'
+              :If ipa.NewValue∊PS.API.SpanStatusCode.(OK ERROR)
+                  statusCode←ipa.NewValue
+              :EndIf
+          :Case 'StatusMessage'
+              :If 0=10|⎕DR ipa.NewValue
+              :AndIf 1=≡ipa.NewValue
+                  statusMessage←ipa.NewValue
+              :EndIf
+          :EndSelect
         ∇
     :EndProperty
 
     ∇ AddEvent args;attrm;r
-      :Access Public Instance
+      :Implements Method ISpan.AddEvent
       ⍝ Add a Span Event
       ⍝ args, vov: EventName [attributes]
       ⍝ attributes as Key/value pairs
@@ -76,7 +96,7 @@
     ∇
 
     ∇ AddLink args;attrm;r;span
-      :Access Public Instance
+      :Implements Method ISpan.AddLink
       ⍝ Add a link to another Span
       ⍝ args, vov: Span [attributes]
       ⍝ attributes as Key/value pairs
@@ -93,22 +113,20 @@
       ⍝
     ∇
 
-  ⍝ Returns the context (HTTP header) associated with this Span.
-    :Property Simple Context
-    :Access Public Instance
-  ⍝ Returns Context
-        ∇ r←get ipa
-          r←1 2⍴'traceparent'('00-',traceId,'-',spanId,'-01')
-        ⍝r⍪←'tracecontext' ''
-        ∇
-    :EndProperty
+
+    ∇ r←GetHttpContext
+      :Implements Method ISpan.GetHttpContext
+     ⍝ Returns the context (HTTP header) associated with this Span.
+      r←1 2⍴'traceparent'('00-',traceId,'-',spanId,'-01')
+     ⍝r⍪←'tracecontext' ''
+    ∇
 
     ∇ r←GetAttribute attr;lookup
-      :Access Public Instance
-   ⍝ Get a single Attribute with the
-   ⍝ key passed as argument.
-   ⍝ ra, cv: attribute key
-   ⍝ Return, Attribute value
+      :Implements Method ISpan.GetAttribute
+     ⍝ Get a single Attribute with the
+     ⍝ key passed as argument.
+     ⍝ attr, cv: attribute key
+     ⍝ Return, Attribute value
       lookup←attributes[;1]⍳⊆attr
       :If lookup≤≢attributes
           r←⊃attributes[lookup;2]
@@ -117,53 +135,18 @@
       :EndIf
     ∇
 
-    ∇ r←SetAttributes attrs;attrm
-      :Access Public Instance
-   ⍝ Sets Attributes to the Span
-   ⍝ ra, nv: 2-elements key val pairs
+    ∇ SetAttributes attrs;attrm
+      :Implements Method ISpan.SetAttributes
+     ⍝ Sets Attributes to the Span
+     ⍝ ra, nv: 2-elements key val pairs
       attrm←toKeyValueMatrix attrs
       validateAttributes attributes⍪attrm
       attributes⍪←attrm
     ∇
 
-    ∇ SetKind ra
-      :Access Public
-      :If ~ra∊PS.API.SpanKind.(UNSPECIFIED INTERNAL SERVER CLIENT PRODUCER CONSUMER)
-          'Invalid span kind'⎕SIGNAL 11
-      :EndIf
-      kind←ra
-    ∇
-
-    ∇ r←{msg}SetStatus status
-      :Access Public Instance
-   ⍝ Sets status of the Span
-   ⍝ ra, ns: 0 - OK, 1 - Error
-   ⍝ la, cv: optional status message
-   ⍝ Return, Span
-      :If ~status∊PS.API.SpanStatusCode.(OK ERROR)
-          'Invalid status code'⎕SIGNAL 11
-      :EndIf
-      :If 2=⎕NC'msg'
-          :If 0=10|⎕DR msg
-              statusMessage←msg
-          :Else
-              'A status message must be a string'⎕SIGNAL 11
-          :EndIf
-      :EndIf
-      statusCode←status
-    ∇
-
-    ∇ r←UpdateName _name
-    ⍝ Update the Span name
-    ⍝ rarg, name to update
-    ⍝ Return, Span
-      →isEnded/0
-      name←_name
-    ∇
-
     ∇ End;r
 ⍝   Marks the end of Span execution.
-      :Access Public Instance
+      :Implements Method ISpan.End
       →isEnded/0
       endTime←Now
       isEnded←1

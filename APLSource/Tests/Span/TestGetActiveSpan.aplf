@@ -7,16 +7,16 @@
 
  tracer←##.Notela.GetTracer'TestTraces'
  span_main←tracer.StartActiveSpan'MainInTestGetActiveSpan'
- ctxMain←span_main.Context
+ ctxMain←span_main.GetHttpContext
 
  subSpan←tracer.StartSpan'SubSpan'
  subSpan1←tracer.StartSpan'SubSpan1'
- ctxSub←subSpan.Context
+ ctxSub←subSpan.GetHttpContext
 
  activeSpan←tracer.GetActiveSpan
 
- Assert ctxMain≡activeSpan.Context
- Assert ctxSub≢activeSpan.Context
+ Assert ctxMain≡activeSpan.GetHttpContext
+ Assert ctxSub≢activeSpan.GetHttpContext
  ⎕DL?0
  subSpan.End
  subSpan1.End
