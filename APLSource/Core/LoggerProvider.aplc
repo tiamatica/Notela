@@ -107,8 +107,10 @@
     ∇
 
     ∇ PostHttpJson logs;res;ts
-      _httpClt.Params←logs
-      res←_httpClt.Run
+      :Hold 'httpPostLog'
+          _httpClt.Params←logs
+          res←_httpClt.Run
+      :EndHold
       LogError(200≠⊃res.HttpStatus)'Failed posting logs'
     ∇
 

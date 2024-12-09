@@ -149,18 +149,11 @@
     ⍝
     ∇
 
-    ∇ HousekeepThreads;leftover
-      :Hold '_activeSpans'
-          :If ~0∊⍴_activeSpans
-          :AndIf ~0∊⍴leftover←(~_activeSpans.Tid∊⎕TNUMS)/_activeSpans
-              _activeSpans~←leftover
-          :EndIf
-      :EndHold
-    ∇
-
     ∇ PostHttpJson trace;res;ts
-      _httpClt.Params←trace
-      res←_httpClt.Run
+      :Hold 'httpPostTrace'
+          _httpClt.Params←trace
+          res←_httpClt.Run
+      :EndHold
       LogError(200≠⊃res.HttpStatus)'Failed posting trace'
     ∇
 
