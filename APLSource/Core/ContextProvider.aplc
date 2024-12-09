@@ -17,12 +17,13 @@
       _activeSpans←⍬
     ∇
 
-    ∇ r←GetActiveSpan
+    ∇ r←GetActiveSpan;threadSpans
       :Access Public
-      :If 0=≢_activeSpans
+      threadSpans←⎕TID{0∊⍴⍵:⍬ ⋄ (⍵.Tid∊⍺)/⍵}_activeSpans
+      :If 0∊⍴threadSpans
           r←⍬
       :Else
-          r←⊃⌽_activeSpans
+          r←⊃⌽threadSpans
       :EndIf
     ∇
 
