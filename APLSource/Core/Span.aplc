@@ -52,10 +52,30 @@
       End
     ∇
 
-    :Property Simple Scope,SpanId,TraceId,Tid ⍝EndTime,Kind,Name,ParentSpanId,SpanId,StartTime,TraceId,Tid
+    :Property Simple Kind,Name,Scope,SpanId,StatusCode,StatusMessage,TraceId,Tid ⍝EndTime,Kind,ParentSpanId,SpanId,StartTime,TraceId,Tid
     :Access Public
         ∇ r←get ipa
-          r←('Scope' 'SpanId' 'TraceId' 'Tid'⍳⊂ipa.Name)⊃scopeSpan.scope spanId traceId tid
+          r←('Kind' 'Name' 'Scope' 'SpanId' 'StatusCode' 'StatusMessage' 'TraceId' 'Tid'⍳⊂ipa.Name)⊃kind name scopeSpan.scope spanId statusCode statusMessage traceId tid
+        ∇
+        ∇ set ipa
+          →isEnded/0
+          :Select ipa.Name
+          :Case 'Name'
+              name←ipa.NewValue
+          :Case 'Kind'
+              :If ipa.NewValue∊PS.API.SpanKind.(UNSPECIFIED INTERNAL SERVER CLIENT PRODUCER CONSUMER)
+                  kind←ipa.NewValue
+              :EndIf
+          :Case 'StatusCode'
+              :If ipa.NewValue∊PS.API.SpanStatusCode.(OK ERROR)
+                  statusCode←ipa.NewValue
+              :EndIf
+          :Case 'StatusMessage'
+              :If 0=10|⎕DR ipa.NewValue
+              :AndIf 1=≡ipa.NewValue
+                  statusMessage←ipa.NewValue
+              :EndIf
+          :EndSelect
         ∇
     :EndProperty
 
@@ -122,41 +142,6 @@
       attrm←toKeyValueMatrix attrs
       validateAttributes attributes⍪attrm
       attributes⍪←attrm
-    ∇
-
-    ∇ SetKind ra
-      :Access Public
-      :If ~ra∊PS.API.SpanKind.(UNSPECIFIED INTERNAL SERVER CLIENT PRODUCER CONSUMER)
-          'Invalid span kind'⎕SIGNAL 11
-      :EndIf
-      kind←ra
-    ∇
-
-    ∇ r←{msg}SetStatus status
-      :Access Public Instance
-   ⍝ Sets status of the Span
-   ⍝ ra, ns: 0 - OK, 1 - Error
-   ⍝ la, cv: optional status message
-   ⍝ Return, Span
-      :If ~status∊PS.API.SpanStatusCode.(OK ERROR)
-          'Invalid status code'⎕SIGNAL 11
-      :EndIf
-      :If 2=⎕NC'msg'
-          :If 0=10|⎕DR msg
-              statusMessage←msg
-          :Else
-              'A status message must be a string'⎕SIGNAL 11
-          :EndIf
-      :EndIf
-      statusCode←status
-    ∇
-
-    ∇ r←UpdateName _name
-    ⍝ Update the Span name
-    ⍝ rarg, name to update
-    ⍝ Return, Span
-      →isEnded/0
-      name←_name
     ∇
 
     ∇ End;r

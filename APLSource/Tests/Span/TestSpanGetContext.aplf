@@ -7,12 +7,12 @@
  tracer←##.Notela.GetTracer'Notela' '0.1.0'
  span←tracer.StartActiveSpan'MainRequest'
  span_sub←tracer.StartSpan'SubSpan'
- ctxMain←span.Context
- ctxSub←span_sub.Context
+ ctxMain←span.GetHttpContext
+ ctxSub←span_sub.GetHttpContext
  activeSpan←tracer.GetActiveSpan
 
- Assert ctxMain≡activeSpan.Context
- Assert ctxSub≢activeSpan.Context
+ Assert ctxMain≡activeSpan.GetHttpContext
+ Assert ctxSub≢activeSpan.GetHttpContext
  span.End
  span_sub.End
  ⍝
