@@ -1,0 +1,34 @@
+name: Run Tests
+run-name: Run tests ${{ github.ref_name}}.${{ github.run_id}}-${{ github.run_number}}.${{ github.run_attempt}}
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  Run-Tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Login to Azure CR
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ vars.CONTAINER_REGISTRY }}
+          username: ${{ secrets.AZURE_ACR_USR }}
+          password: ${{ secrets.AZURE_ACR_PWD }}
+
+      - name: Run tests using Docker
+        run: >
+          chmod -R 777 ${{ github.workspace }};
+          docker run
+          -v ${{ github.workspace }}:/app
+          -w /app -e DYALOG_SERIAL=${{ secrets.DYALOG_SERIAL }}
+          -e LOAD=/app/tasks/RunTests.aplf
+          -e GITHUB_TOKEN="${{ github.token }}"
+          -e GITHUB_REPOSITORY="${{ github.repository }}"
+          -e GITHUB_SHA="${{ github.sha }}"
+          ${{ vars.CONTAINER_REGISTRY }}/dyalog:v190-dotnet;
+          exit $?
