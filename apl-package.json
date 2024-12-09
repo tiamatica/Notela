@@ -17,7 +17,7 @@
   os_win: 1,
   project_url: "https://github.com/tiamatica/Notela",
   source: "APLSource/Core",
-  tags: "telemetry,OTEL",
+  tags: "telemetry,otel",
   userCommandScript: "",
   version: "0.0.0",
 }
