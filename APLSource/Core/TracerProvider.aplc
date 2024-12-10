@@ -2,7 +2,6 @@
     :Include Tools
 ⍝ Tracer Provider initialization
 
-    :Field Private Instance _activeSpans
     :Field Private Instance _cfg
     :Field Private Instance _httpClt
     :Field Private Instance _threads
@@ -20,7 +19,6 @@
       :Else
           'Constructor requires a Configuration instance'⎕SIGNAL 11
       :EndIf
-      _activeSpans←⍬
       _threads←⍬
       _isShuttingDown←0
      
@@ -41,23 +39,17 @@
     ∇ r←GetContext tracer;last
       :Implements Method ITracerProvider.GetContext
       ⍝ Returns Context
-      :If 0=≢_activeSpans
-          r←⍬
-      :Else
-          last←GetActiveSpan tracer
+      last←PS.GetActiveSpan
+      r←⍬
+      :If 0=≢last
           r←last.Context
       :EndIf
     ∇
 
-    ∇ r←GetActiveSpan tracer;threadSpans
+    ∇ r←GetActiveSpan tracer
       :Implements Method ITracerProvider.GetActiveSpan
   ⍝ Gets the span from the current context, if one exists.
-      threadSpans←⎕TID tracer.scope{0∊⍴⍵:⍬ ⋄ (⍵.(Tid Scope)∊⊂⍺)/⍵}_activeSpans
-      :If 0∊⍴threadSpans
-          r←⍬
-      :Else
-          r←⊃⌽threadSpans
-      :EndIf
+      r←PS.GetActiveSpan
     ∇
 
     ∇ span←{context}StartSpan args;parent;ind;traceId;parentId;spanId;name;create;scopeSpan
@@ -97,24 +89,20 @@
       :Else
           span←context StartSpan args
       :EndIf
-      :Hold '_activeSpans'
-          _activeSpans,←span
-      :EndHold
+      PS.SetActiveSpan span
     ∇
 
     ∇ End span;c;tracespans
       :Access Public Instance
     ⍝ End span then send it for further processing
       ProcessSpans 0
-      :Hold '_activeSpans'
-          _activeSpans~←span
-      :EndHold
+      PS.RemoveActiveSpan span
     ∇
 
     ∇ {r}←ProcessSpans flush;traces;spanBufferLength
  ⍝ Recieve spans for further processing
  ⍝ force = 1 to force flush of buffers
-      :If flush∨~_isShuttingDown 
+      :If flush∨~_isShuttingDown
       :AndIf 0≠⍴_resourceSpan.scopeSpans
           _threads←(_threads∊⎕TNUMS)/_threads
           spanBufferLength←+/≢¨_resourceSpan.scopeSpans.spans
@@ -128,7 +116,7 @@
           :EndIf
           :If flush
               ⎕TSYNC _threads
-          :EndIf 
+          :EndIf
       :EndIf
       r←0
     ∇
@@ -149,18 +137,11 @@
     ⍝
     ∇
 
-    ∇ HousekeepThreads;leftover
-      :Hold '_activeSpans'
-          :If ~0∊⍴_activeSpans
-          :AndIf ~0∊⍴leftover←(~_activeSpans.Tid∊⎕TNUMS)/_activeSpans
-              _activeSpans~←leftover
-          :EndIf
-      :EndHold
-    ∇
-
     ∇ PostHttpJson trace;res;ts
-      _httpClt.Params←trace
-      res←_httpClt.Run
+      :Hold 'httpPostTrace'
+          _httpClt.Params←trace
+          res←_httpClt.Run
+      :EndHold
       LogError(200≠⊃res.HttpStatus)'Failed posting trace'
     ∇
 
@@ -187,9 +168,9 @@
     ∇
 
     ∇ {r}←Shutdown
-      :Implements Method ITracerProvider.Shutdown 
+      :Implements Method ITracerProvider.Shutdown
       _isShuttingDown←1
-      r←ProcessSpans 1 
+      r←ProcessSpans 1
     ∇
 
     ∇ {r}←ForceFlush

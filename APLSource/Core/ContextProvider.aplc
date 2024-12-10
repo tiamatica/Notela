@@ -1,0 +1,50 @@
+:Class ContextProvider
+    :Include Tools
+    ⍝ Logger Provider initialization
+    :Field Private Instance _cfg
+
+    ∇ make cfg;resource
+      :Access Public
+      :Implements Constructor
+      ⎕RL←⍬ 1
+      PS←(⊃⊃⎕CLASS ⎕THIS).##
+      :If 9.2=⎕NC⊂'cfg'
+      :AndIf PS.API.Configuration≡⊃⊃⎕CLASS cfg
+          _cfg←cfg
+      :Else
+          'Constructor requires a Configuration instance'⎕SIGNAL 11
+      :EndIf
+      _activeSpans←⍬
+    ∇
+
+    ∇ r←GetActiveSpan;threadSpans
+      :Access Public
+      threadSpans←⎕TID{0∊⍴⍵:⍬ ⋄ (⍵.Tid∊⍺)/⍵}_activeSpans
+      :If 0∊⍴threadSpans
+          r←⍬
+      :Else
+          r←⊃⌽threadSpans
+      :EndIf
+    ∇
+
+    ∇ RemoveActiveSpan span
+      :Access Public
+      :Hold '_activeSpans'
+          _activeSpans~←span
+      :EndHold
+    ∇
+
+    ∇ SetActiveSpan span
+      :Access Public
+      :Hold '_activeSpans'
+          _activeSpans,←span
+      :EndHold
+    ∇
+
+    ∇ {r}←Shutdown
+      :Access Public
+      r←0
+      _activeSpans←⍬
+    ∇
+
+:EndClass

@@ -117,8 +117,10 @@
     ∇
 
     ∇ PostHttpJson metrics;res
-      _httpClt.Params←metrics
-      res←_httpClt.Run
+      :Hold 'httpPostMeter'
+          _httpClt.Params←metrics
+          res←_httpClt.Run
+      :EndHold
       LogError(200≠⊃res.HttpStatus)'Failed posting metric'
     ∇
 

@@ -13,3 +13,7 @@
      ∆tracerProvider.Shutdown
      ⎕EX'∆tracerProvider'
  :EndIf
+ :If 0≠⎕NC'∆contextProvider'
+     ∆contextProvider.Shutdown
+     ⎕EX'∆contextProvider'
+ :EndIf

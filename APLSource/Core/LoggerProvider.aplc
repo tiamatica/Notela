@@ -48,7 +48,7 @@
       r←⎕NEW PS.Logger(,scopeLog)
     ∇
 
-    ∇ scope Log args;attrs;body;log;severity;span;spanId;traceId;tracer
+    ∇ scope Log args;attrs;body;log;severity;span;spanId;traceId
       :Implements Method ILoggerProvider.Log
       args,←(≢args)↓(PS.API.LogSeverity.INFO'')''
       severity body←2↑args
@@ -63,8 +63,7 @@
       log.severityNumber←1⊃severity
       log.severityText←2⊃severity
      
-      tracer←PS.GetTracer''
-      span←tracer.GetActiveSpan
+      span←PS.GetActiveSpan
       :If 0<≢span
           log.(traceId spanId)←span.(TraceId SpanId)
       :EndIf
@@ -77,7 +76,7 @@
     ∇ {r}←ProcessLogs flush;bufferLength;logs
       ⍝ Recieve logs for further processing such as batching, sampling and/or enrichment
       ⍝ flush = 1 to force flush buffered logs
-      :If flush∨~_isShuttingDown 
+      :If flush∨~_isShuttingDown
       :AndIf 0≠⍴_resourceLog.scopeLogs
           bufferLength←+/≢¨_resourceLog.scopeLogs.logRecords
       :AndIf (flush∧0<bufferLength)∨(_cfg.BatchSize≤bufferLength)
@@ -107,8 +106,10 @@
     ∇
 
     ∇ PostHttpJson logs;res;ts
-      _httpClt.Params←logs
-      res←_httpClt.Run
+      :Hold 'httpPostLog'
+          _httpClt.Params←logs
+          res←_httpClt.Run
+      :EndHold
       LogError(200≠⊃res.HttpStatus)'Failed posting logs'
     ∇
 
@@ -120,14 +121,13 @@
 
     ∇ {r}←Shutdown
       :Implements Method ILoggerProvider.Shutdown
-      _isShuttingDown←1 
-      r←ProcessLogs 1 
+      _isShuttingDown←1
+      r←ProcessLogs 1
     ∇
 
     ∇ {r}←ForceFlush
       :Access Public Instance
       r←ProcessLogs 1
     ∇
-
 
 :EndClass
