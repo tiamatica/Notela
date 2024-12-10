@@ -1,0 +1,11 @@
+ {r}←Flush
+ r←0
+ :If 0≠⎕NC'∆loggerProvider'
+     ∆loggerProvider.ForceFlush
+ :EndIf
+ :If 0≠⎕NC'∆meterProvider'
+     ∆meterProvider.ForceFlush
+ :EndIf
+ :If 0≠⎕NC'∆tracerProvider'
+     ∆tracerProvider.ForceFlush
+ :EndIf
