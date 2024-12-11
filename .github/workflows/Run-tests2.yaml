@@ -1,0 +1,35 @@
+name: Run Tests
+run-name: Try Run tests container ${{ github.ref_name}}.${{ github.run_id}}-${{ github.run_number}}.${{ github.run_attempt}}
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  Run-Tests:
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ vars.CONTAINER_REGISTRY }}/dyalog:v190-dotnet
+      credentials:
+        username: ${{ secrets.AZURE_ACR_USR }}
+        password: ${{ secrets.AZURE_ACR_PWD }}
+      env:
+        DYALOG_SERIAL: ${{ secrets.DYALOG_SERIAL }}
+        LOAD: ./tasks/RunTests.aplf
+        GITHUB_TOKEN: ${{ github.token }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_SHA: ${{ github.sha }}
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+
+      - name: Try calling entrypoint script
+        shell: bash
+        run: |
+          pwd
+          ls -a
+          chmod +x entrypoint
+          ./entrypoint
+
