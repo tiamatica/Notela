@@ -135,13 +135,18 @@
       :EndIf
     ∇
 
-    ∇ SetAttributes attrs;attrm
+    ∇ SetAttributes attrs;attrm;valid
       :Implements Method ISpan.SetAttributes
      ⍝ Sets Attributes to the Span
      ⍝ ra, nv: 2-elements key val pairs
       attrm←toKeyValueMatrix attrs
-      validateAttributes attributes⍪attrm
+      valid←0 1 3 5∊⍨10|⎕DR¨attrm[;2]
+      valid∨←attrm[;2]∊⊂¨'true' 'false'
+      attrm←valid⌿attrm
       attributes⍪←attrm
+      :If 0∊≠⊣/attributes         
+        attributes←(⌽≠⌽attrm[;1])⌿attributes
+      :EndIf
     ∇
 
     ∇ End;r
