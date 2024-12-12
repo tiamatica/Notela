@@ -6,8 +6,15 @@
  ##.Notela.Start cfg
  tracer←##.Notela.GetTracer'Notela' '0.1.0'
  span←tracer.StartActiveSpan'MainRequest'
- (11 Try span.SetAttributes)('exception.escape' 0)('exception.escape' 'DivByZero')
+ span.SetAttributes('exception.escape' 0)('exception.escape' 'DivByZero')('e.e' 'true')
+ Assert 9=≢span.GetAttribute'exception.escape'
+ Assert 4=≢span.GetAttribute'e.e'
  ⎕DL?0
  span.End
  trace←##.GetTrace 0.1
+ t←⊃trace.resourceSpans.scopeSpans
+ Assert 2=≢⊃⊃t.spans.attributes
+ Assert'exception.escape' 'e.e'≡⊃⊃t.spans.attributes.key
+ Assert'stringValue' 'stringValue'≡⊃¨⊃t.(⊃spans).attributes.value.⎕NL ¯2
+ Assert 'DivByZero'  'true'≡⊃t.(⊃spans).attributes.value.stringValue
 ⍝

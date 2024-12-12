@@ -86,7 +86,7 @@
       ⍝ attributes as Key/value pairs
       args←,⊆args
       attrm←toKeyValueMatrix 1↓args
-      validateAttributes attrm
+      attrm←checkAttributes attrm
       r←⎕NS''
       r.name←⊃args
       r.timeUnixNano←timeUnixNano 0
@@ -107,7 +107,7 @@
       r.spanId←span.SpanId
       r.traceState←''
       attrm←toKeyValueMatrix 1↓args
-      validateAttributes attrm
+      attrm←checkAttributes attrm
       r.attributes←toKeyValue/attrm
       links,←r
       ⍝
@@ -140,8 +140,7 @@
      ⍝ Sets Attributes to the Span
      ⍝ ra, nv: 2-elements key val pairs
       attrm←toKeyValueMatrix attrs
-      validateAttributes attributes⍪attrm
-      attributes⍪←attrm
+      attributes←checkAttributes attributes⍪attrm
     ∇
 
     ∇ End;r
