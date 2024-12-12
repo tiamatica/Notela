@@ -85,7 +85,7 @@
       ⍝ args, vov: EventName [attributes]
       ⍝ attributes as Key/value pairs
       args←,⊆args
-      attrm←toKeyValueMatrix 1↓args 
+      attrm←toKeyValueMatrix 1↓args
       attrm←checkAttributes attrm
       r←⎕NS''
       r.name←⊃args
@@ -107,7 +107,7 @@
       r.spanId←span.SpanId
       r.traceState←''
       attrm←toKeyValueMatrix 1↓args
-      attrm←checkAttributes attrm    
+      attrm←checkAttributes attrm
       r.attributes←toKeyValue/attrm
       links,←r
       ⍝
@@ -135,12 +135,12 @@
       :EndIf
     ∇
 
-    ∇ SetAttributes attrs;attrm;valid
+    ∇ SetAttributes attrs;attrm
       :Implements Method ISpan.SetAttributes
      ⍝ Sets Attributes to the Span
      ⍝ ra, nv: 2-elements key val pairs
-      attrm←toKeyValueMatrix attrs      
-      attributes⍪←checkAttributes attrm
+      attrm←toKeyValueMatrix attrs
+      attributes←checkAttributes attributes⍪attrm
     ∇
 
     ∇ End;r
