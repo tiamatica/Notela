@@ -8,7 +8,7 @@
 
     ∇ r←GetTracer args
       :Implements Method ITracerProvider.GetTracer
-      r←⎕NEW PS.TracerNOP 
+      r←⎕NEW PS.TracerNOP
     ∇
 
     ∇ {r}←Shutdown
@@ -22,17 +22,17 @@
     ∇
 
     ∇ r←GetActiveSpan tracer
-      :Implements Method ITracerProvider.GetActiveSpan  
+      :Implements Method ITracerProvider.GetActiveSpan
       r←⍬
     ∇
 
     ∇ r←{context}StartSpan args
       :Implements Method ITracerProvider.StartSpan
-      r←⎕NEW PS.SpanNOP
+      r←⎕NEW PS.Span(⊂'')
     ∇
 
     ∇ r←{context}StartActiveSpan args
-      :Implements Method ITracerProvider.StartActiveSpan 
+      :Implements Method ITracerProvider.StartActiveSpan
       r←StartSpan args
     ∇
 
