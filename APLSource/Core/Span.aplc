@@ -1,4 +1,4 @@
-:Class Span: ISpan
+:Class Span
     :Include Tools
 
     :Field Private Instance name
@@ -29,7 +29,7 @@
           isEnded←1
           'Spans must be created from tracer'⎕SIGNAL 982
       :EndIf
-      isEnded←0
+      isEnded←PS.TracerProviderNOP≡⊃⊃⎕CLASS⊃⎕RSI
      
       (scopeSpan traceId parentSpanId spanId name)←context
      
@@ -52,7 +52,7 @@
       End
     ∇
 
-    :Property Simple Kind,Name,Scope,SpanId,StatusCode,StatusMessage,TraceId,Tid ⍝EndTime,Kind,ParentSpanId,SpanId,StartTime,TraceId,Tid
+    :Property Simple Kind,Name,Scope,SpanId,StatusCode,StatusMessage,TraceId,Tid ⍝EndTime,ParentSpanId,StartTime
     :Access Public
         ∇ r←get ipa
           r←('Kind' 'Name' 'Scope' 'SpanId' 'StatusCode' 'StatusMessage' 'TraceId' 'Tid'⍳⊂ipa.Name)⊃kind name scopeSpan.scope spanId statusCode statusMessage traceId tid
@@ -80,7 +80,7 @@
     :EndProperty
 
     ∇ AddEvent args;attrm;r
-      :Implements Method ISpan.AddEvent
+      :Access Public
       ⍝ Add a Span Event
       ⍝ args, vov: EventName [attributes]
       ⍝ attributes as Key/value pairs
@@ -96,7 +96,7 @@
     ∇
 
     ∇ AddLink args;attrm;r;span
-      :Implements Method ISpan.AddLink
+      :Access Public
       ⍝ Add a link to another Span
       ⍝ args, vov: Span [attributes]
       ⍝ attributes as Key/value pairs
@@ -115,14 +115,14 @@
 
 
     ∇ r←GetHttpContext
-      :Implements Method ISpan.GetHttpContext
+      :Access Public
      ⍝ Returns the context (HTTP header) associated with this Span.
       r←1 2⍴'traceparent'('00-',traceId,'-',spanId,'-01')
      ⍝r⍪←'tracecontext' ''
     ∇
 
     ∇ r←GetAttribute attr;lookup
-      :Implements Method ISpan.GetAttribute
+      :Access Public
      ⍝ Get a single Attribute with the
      ⍝ key passed as argument.
      ⍝ attr, cv: attribute key
@@ -136,7 +136,7 @@
     ∇
 
     ∇ SetAttributes attrs;attrm
-      :Implements Method ISpan.SetAttributes
+      :Access Public
      ⍝ Sets Attributes to the Span
      ⍝ ra, nv: 2-elements key val pairs
       attrm←toKeyValueMatrix attrs
@@ -145,7 +145,7 @@
 
     ∇ End;r
 ⍝   Marks the end of Span execution.
-      :Implements Method ISpan.End
+      :Access Public
       →isEnded/0
       endTime←Now
       isEnded←1
