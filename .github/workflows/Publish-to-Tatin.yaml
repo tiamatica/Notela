@@ -27,7 +27,8 @@ jobs:
           chmod -R 777 ${{ github.workspace }};
           docker run
           -v ${{ github.workspace }}:/app
-          -w /app -e DYALOG_SERIAL=${{ secrets.DYALOG_SERIAL }}
+          -w /app 
+          -e DYALOG_SERIAL=${{ secrets.DYALOG_SERIAL }}
           -e LOAD=/app/tasks/BuildAndPublish.aplf
           -e TAG_VERSION="${{ github.ref_name }}"
           -e GITHUB_TOKEN="${{ github.token }}"
