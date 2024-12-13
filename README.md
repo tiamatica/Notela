@@ -1,10 +1,11 @@
-# Notela - APL OpenTelemetry Tools
+# Notela - OpenTelemetry 
 
-Tools for sending OpenTelemetry messages over HTTP.
+Notela is a framework for Dyalog APL to facilitate creation telemetry data and sending it via http.
 
 Experimentation with OpenTelemetry Collector connected to a telemetry backend using Docker Compose.
 
-## Aspire dashboard
+## Getting started
+### Aspire dashboard
 Start dashboard with docker compose:
 
 ```
