@@ -30,6 +30,8 @@ jobs:
         run: |
           pwd
           ls -a
+          echo $HOME
+          id -u
           chmod +x entrypoint
           ./entrypoint
 
