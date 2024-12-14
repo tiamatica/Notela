@@ -1,2 +1,4 @@
  RemoveActiveSpan span
- ∆contextProvider.RemoveActiveSpan span
+ :If 0≠⎕NC'∆contextProvider'
+     ∆contextProvider.RemoveActiveSpan span
+ :EndIf

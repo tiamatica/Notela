@@ -1,2 +1,5 @@
-r←GetActiveSpan
-r←∆contextProvider.GetActiveSpan
+ r←GetActiveSpan
+ r←⍬
+ :If 0≠⎕NC'∆contextProvider'
+     r←∆contextProvider.GetActiveSpan
+ :EndIf
