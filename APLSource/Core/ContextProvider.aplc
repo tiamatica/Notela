@@ -1,6 +1,8 @@
 :Class ContextProvider
     :Field Private Instance DEBUG←0
     :Field Private Instance _cfg
+    :Field Private Instance _activeSpans
+    :Field Private Instance _threads
 
     ⍝ ContextProvider initialization
     ∇ make cfg;resource
@@ -8,42 +10,35 @@
       :Implements Constructor
       ⎕RL←⍬ 1
       DEBUG←cfg.Debug
-      _activeSpans←⍬
+      _activeSpans _threads←⊂⍬
     ∇
 
-    ∇ r←GetActiveSpan;threadSpans
+    ∇ r←GetActiveSpan
       :Access Public
       r←⍬
       :Trap DEBUG↓0
-          threadSpans←⎕TID{0∊⍴⍵:⍬ ⋄ (⍵.Tid∊⍺)/⍵}_activeSpans
-          :If 0<≢threadSpans
-              r←⊃⌽threadSpans
-          :EndIf
+          r←{0=≢⍵:⍬ ⋄ ⊃⌽⍵}(_threads=⎕TID)/_activeSpans
       :EndTrap
     ∇
 
     ∇ RemoveActiveSpan span
       :Access Public
       :Trap DEBUG↓0
-          :Hold '_activeSpans'
-              _activeSpans~←span
-          :EndHold
+          _activeSpans _threads/⍨←⊂~_activeSpans∊span
       :EndTrap
     ∇
 
     ∇ SetActiveSpan span
       :Access Public
       :Trap DEBUG↓0
-          :Hold '_activeSpans'
-              _activeSpans,←span
-          :EndHold
+          _activeSpans _threads,←span ⎕TID
       :EndTrap
     ∇
 
     ∇ {r}←Shutdown
       :Access Public
       r←0
-      _activeSpans←⍬
+      _activeSpans _threads←⊂⍬
     ∇
 
 :EndClass

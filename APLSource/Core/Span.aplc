@@ -19,7 +19,6 @@
     :Field Private Instance isEnded←0
     :Field Private Instance statusCode←0
     :Field Private Instance statusMessage←''
-    :Field Private Instance tid←0
     :Field Private Instance scopeSpan←⍬
 
     ∇ make args
@@ -41,7 +40,6 @@
       links←⍬
       statusCode←PS.API.SpanStatusCode.UNSET
       statusMessage←''
-      tid←⎕TID
       ⍝
     ∇
 
@@ -52,12 +50,12 @@
       End
     ∇
 
-    :Property Simple Kind,Name,SpanId,StatusCode,StatusMessage,TraceId,Tid ⍝EndTime,ParentSpanId,StartTime
+    :Property Simple Kind,Name,SpanId,StatusCode,StatusMessage,TraceId ⍝EndTime,ParentSpanId,StartTime
     :Access Public
         ∇ r←get ipa
           r←''
           :Trap DEBUG↓0
-              r←('Kind' 'Name' 'SpanId' 'StatusCode' 'StatusMessage' 'TraceId' 'Tid'⍳⊂ipa.Name)⊃kind name spanId statusCode statusMessage traceId tid
+              r←('Kind' 'Name' 'SpanId' 'StatusCode' 'StatusMessage' 'TraceId'⍳⊂ipa.Name)⊃kind name spanId statusCode statusMessage traceId
           :EndTrap
         ∇
         ∇ set ipa
