@@ -7,12 +7,12 @@
 
     ∇ r←GetContext
       :Implements Method ITracer.GetContext
-      r←##.GetContext ⎕THIS
+      r←⍬
     ∇
 
     ∇ r←GetActiveSpan
       :Implements Method ITracer.GetActiveSpan
-      r←##.GetActiveSpan ⎕THIS
+      r←⍬
     ∇
 
     ∇ span←{context}StartSpan name

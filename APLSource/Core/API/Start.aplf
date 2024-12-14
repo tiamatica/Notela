@@ -1,4 +1,9 @@
  Start cfg
-⍝ Start OpenTelemetry SDK using configuration cfg
- ##.Start cfg
+⍝ Initialise and start Notela using configuration in cfg
+ :If 9.2=⎕NC⊂'cfg'
+ :AndIf Configuration≡⊃⊃⎕CLASS cfg
+     ##.Start cfg
+ :Else
+     'cfg must be a Configuration instance'⎕SIGNAL 11
+ :EndIf
 ⍝

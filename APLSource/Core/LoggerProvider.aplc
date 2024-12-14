@@ -1,23 +1,21 @@
 :Class LoggerProvider: ILoggerProvider
     :Include Tools
-    ⍝ Logger Provider initialization
+
+    :Field Private Instance DEBUG←0
     :Field Private Instance _cfg
     :Field Private Instance _httpClt
     :Field Private Instance _logs
     :Field Private Instance _resourceLog
     :Field Private Instance _isShuttingDown
 
+    ⍝ Logger Provider initialization
     ∇ make cfg;resource
       :Access Public
       :Implements Constructor
       ⎕RL←⍬ 1
       PS←(⊃⊃⎕CLASS ⎕THIS).##
-      :If 9.2=⎕NC⊂'cfg'
-      :AndIf PS.API.Configuration≡⊃⊃⎕CLASS cfg
-          _cfg←cfg
-      :Else
-          'Constructor requires a Configuration instance'⎕SIGNAL 11
-      :EndIf
+      _cfg←cfg
+      DEBUG←cfg.Debug
       _logs←⎕NS''
       _resourceLog←_logs.⎕NS''
       _logs.resourceLogs←,_resourceLog
@@ -29,48 +27,57 @@
       _httpClt.Command←'post'
       _httpClt.URL←_cfg.OtelHttpUrlLogs
       _httpClt.ContentType←'application/json'
-
+     ⍝
     ∇
 
     ∇ r←GetLogger args;ind;name;version;scopeName;scopeVersion;scopeLog;attrs
       :Implements Method ILoggerProvider.GetLogger
       ⍝ args = ScopeName [ScopeVersion] [attributes]
-      args←,⊆args
-      args←args,(1=≢args)/⊂_cfg.ServiceVersion
-      scopeName scopeVersion←2↑args
-      attrs←toKeyValueMatrix 2↓args
-      scopeLog←_resourceLog.⎕NS''
-      scopeLog.(scope←⎕NS'')
-      scopeLog.scope.(name version)←scopeName scopeVersion
-      scopeLog.scope.attributes←toKeyValue/attrs
-      scopeLog.logRecords←⍬
-      _resourceLog.scopeLogs,←scopeLog
-      r←⎕NEW PS.Logger(,scopeLog)
+      :Trap DEBUG↓0
+          args←,⊆args
+          args←args,(1=≢args)/⊂_cfg.ServiceVersion
+          scopeName scopeVersion←2↑args
+          attrs←toKeyValueMatrix 2↓args
+          scopeLog←_resourceLog.⎕NS''
+          scopeLog.(scope←⎕NS'')
+          scopeLog.scope.(name version)←scopeName scopeVersion
+          scopeLog.scope.attributes←toKeyValue/attrs
+          scopeLog.logRecords←⍬
+          _resourceLog.scopeLogs,←scopeLog
+          r←⎕NEW PS.Logger(scopeLog DEBUG)
+      :Else
+          LogError ⎕EN ⎕DM
+          r←⎕NEW PS.LoggerNOP
+      :EndTrap
     ∇
 
     ∇ scope Log args;attrs;body;log;severity;span;spanId;traceId
       :Implements Method ILoggerProvider.Log
-      args,←(≢args)↓(PS.API.LogSeverity.INFO'')''
-      severity body←2↑args
-      attrs←toKeyValueMatrix 2↓args
-      severity←2↑severity,⊂''
-      log←scope.⎕NS''
-      log.spanId←''
-      log.traceId←''
-      log.body←toAnyValue body
-      log.timeUnixNano←timeUnixNano 0
-      log.attributes←toKeyValue/attrs
-      log.severityNumber←1⊃severity
-      log.severityText←2⊃severity
+      :Trap DEBUG↓0
+          args,←(≢args)↓(PS.API.LogSeverity.INFO'')''
+          severity body←2↑args
+          attrs←toKeyValueMatrix 2↓args
+          severity←2↑severity,⊂''
+          log←scope.⎕NS''
+          log.spanId←''
+          log.traceId←''
+          log.body←toAnyValue body
+          log.timeUnixNano←timeUnixNano 0
+          log.attributes←toKeyValue/attrs
+          log.severityNumber←1⊃severity
+          log.severityText←2⊃severity
      
-      span←PS.GetActiveSpan
-      :If 0<≢span
-          log.(traceId spanId)←span.(TraceId SpanId)
-      :EndIf
-      :Hold '_logs'
-          scope.logRecords,←log
-      :EndHold
-      ProcessLogs 0
+          span←PS.GetActiveSpan
+          :If 0<≢span
+              log.(traceId spanId)←span.(TraceId SpanId)
+          :EndIf
+          :Hold '_logs'
+              scope.logRecords,←log
+          :EndHold
+          ProcessLogs 0
+      :Else
+          LogError ⎕EN ⎕DM
+      :EndTrap
     ∇
 
     ∇ {r}←ProcessLogs flush;bufferLength;logs
@@ -90,8 +97,8 @@
     ∇
 
     ∇ {r}←ExportLogs logs;scopeLog;logR;attr;exporter;callspace;fn
-⍝ Export to OTEL backend or log file
-      :Trap _cfg.Debug↓0
+     ⍝ Export to OTEL backend or log file
+      :Trap DEBUG↓0
           :If 0=≢_cfg.Exporters
               PostHttpJson logs
           :EndIf
@@ -100,7 +107,7 @@
               (callspace⍎fn)logs
           :EndFor
       :Else
-          LogError ⎕EN(↑⎕DM)
+          LogError ⎕EN ⎕DM
       :EndTrap
     ⍝
     ∇
@@ -114,20 +121,31 @@
     ∇
 
     ∇ LogError msg
-      :If _cfg.Debug∧0≠⊃msg
+      :If DEBUG∧0≠⊃msg
           ⎕←msg
       :EndIf
     ∇
 
     ∇ {r}←Shutdown
       :Implements Method ILoggerProvider.Shutdown
-      _isShuttingDown←1
-      r←ProcessLogs 1
+      r←1
+      :Trap DEBUG↓0
+          _isShuttingDown←1
+          r←ProcessLogs 1
+      :Else
+          LogError ⎕EN ⎕DM
+      :EndTrap
     ∇
 
     ∇ {r}←ForceFlush
       :Access Public Instance
-      r←ProcessLogs 1
+      r←1
+      :Trap DEBUG↓0
+          r←ProcessLogs 1
+      :Else
+          LogError ⎕EN ⎕DM
+      :EndTrap
     ∇
 
 :EndClass
+

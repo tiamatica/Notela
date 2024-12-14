@@ -1,18 +1,23 @@
 :Class Logger
+
+    :Field Private Instance DEBUG←0
     :Field Private Instance _scopeLog
 
-    ∇ make1(scopeLog)
+    ∇ make1(scopeLog debug)
       :Access Public
       :Implements Constructor
+      DEBUG←debug
       _scopeLog←scopeLog
     ∇
 
     ∇ {severity}Log args
       :Access Public Instance
-      :If 0=⎕NC'severity'
-          severity←1
-      :EndIf
-      _scopeLog ##.Log (⊂severity),⊆args
+      :Trap DEBUG↓0
+          :If 0=⎕NC'severity'
+              severity←1
+          :EndIf
+          _scopeLog ##.Log(⊂severity),⊆args
+      :EndTrap
     ∇
 
 :EndClass

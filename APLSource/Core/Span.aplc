@@ -1,6 +1,7 @@
 :Class Span
     :Include Tools
 
+    :Field Private Instance DEBUG←0
     :Field Private Instance name
     :Field Private Instance traceId
     :Field Private Instance parentSpanId
@@ -14,26 +15,25 @@
    ⍝ An n-element array with events. Each element
    ⍝ contains an Event name and Event attribute.
 
-    :Field Private Instance links
-    :Field Private Instance isEnded
-    :Field Private Instance statusCode
-    :Field Private Instance statusMessage
-    :Field Private Instance tid
-    :Field Private Instance scopeSpan
+    :Field Private Instance links←⍬
+    :Field Private Instance isEnded←0
+    :Field Private Instance statusCode←0
+    :Field Private Instance statusMessage←''
+    :Field Private Instance tid←0
+    :Field Private Instance scopeSpan←⍬
 
-    ∇ make context
+    ∇ make args
       :Access Public
       :Implements Constructor
       PS←(⊃⊃⎕CLASS ⎕THIS).##
       :If {0::1 ⋄ ~PS.ITracerProvider∊⊃⎕CLASS ⍵}⊃⎕RSI
           isEnded←1
-          'Spans must be created from tracer'⎕SIGNAL 982
+          'Span must be created from tracer'⎕SIGNAL 11
       :EndIf
-      isEnded←PS.TracerProviderNOP≡⊃⊃⎕CLASS⊃⎕RSI
      
-      (scopeSpan traceId parentSpanId spanId name)←context
-     
-      startTime←Now
+      (scopeSpan traceId parentSpanId spanId name DEBUG)←args
+      isEnded←0=≢scopeSpan
+      startTime←timeUnixNano 0
       endTime←0
       kind←PS.API.SpanKind.INTERNAL
       attributes←0 2⍴⊂''
@@ -55,61 +55,76 @@
     :Property Simple Kind,Name,Scope,SpanId,StatusCode,StatusMessage,TraceId,Tid ⍝EndTime,ParentSpanId,StartTime
     :Access Public
         ∇ r←get ipa
-          r←('Kind' 'Name' 'Scope' 'SpanId' 'StatusCode' 'StatusMessage' 'TraceId' 'Tid'⍳⊂ipa.Name)⊃kind name scopeSpan.scope spanId statusCode statusMessage traceId tid
+          r←''
+          :Trap DEBUG↓0
+              r←('Kind' 'Name' 'Scope' 'SpanId' 'StatusCode' 'StatusMessage' 'TraceId' 'Tid'⍳⊂ipa.Name)⊃kind name scopeSpan.scope spanId statusCode statusMessage traceId tid
+          :EndTrap
         ∇
         ∇ set ipa
-          →isEnded/0
-          :Select ipa.Name
-          :Case 'Name'
-              name←ipa.NewValue
-          :Case 'Kind'
-              :If ipa.NewValue∊PS.API.SpanKind.(UNSPECIFIED INTERNAL SERVER CLIENT PRODUCER CONSUMER)
-                  kind←ipa.NewValue
-              :EndIf
-          :Case 'StatusCode'
-              :If ipa.NewValue∊PS.API.SpanStatusCode.(OK ERROR)
-                  statusCode←ipa.NewValue
-              :EndIf
-          :Case 'StatusMessage'
-              :If 0=10|⎕DR ipa.NewValue
-              :AndIf 1=≡ipa.NewValue
-                  statusMessage←ipa.NewValue
-              :EndIf
-          :EndSelect
+          :Trap DEBUG↓0
+              →isEnded/0
+              :Select ipa.Name
+              :Case 'Name'
+                  name←ipa.NewValue
+              :Case 'Kind'
+                  :If ipa.NewValue∊PS.API.SpanKind.(UNSPECIFIED INTERNAL SERVER CLIENT PRODUCER CONSUMER)
+                      kind←ipa.NewValue
+                  :EndIf
+              :Case 'StatusCode'
+                  :If ipa.NewValue∊PS.API.SpanStatusCode.(OK ERROR)
+                      statusCode←ipa.NewValue
+                  :EndIf
+              :Case 'StatusMessage'
+                  :If 0=10|⎕DR ipa.NewValue
+                  :AndIf 1=≡ipa.NewValue
+                      statusMessage←ipa.NewValue
+                  :EndIf
+              :EndSelect
+          :Else
+              LogError ⎕EN ⎕DM
+          :EndTrap
         ∇
     :EndProperty
 
     ∇ AddEvent args;attrm;r
       :Access Public
-      ⍝ Add a Span Event
-      ⍝ args, vov: EventName [attributes]
-      ⍝ attributes as Key/value pairs
-      args←,⊆args
-      attrm←toKeyValueMatrix 1↓args
-      attrm←checkAttributes attrm
-      r←⎕NS''
-      r.name←⊃args
-      r.timeUnixNano←timeUnixNano 0
-      r.attributes←toKeyValue/attrm
-      ⍝r.message←val
-      events,←r
+     ⍝ Add a Span Event
+     ⍝ args, vov: EventName [attributes]
+     ⍝ attributes as Key/value pairs
+      :Trap DEBUG↓0
+          args←,⊆args
+          attrm←toKeyValueMatrix 1↓args
+          attrm←checkAttributes attrm
+          r←⎕NS''
+          r.name←⊃args
+          r.timeUnixNano←timeUnixNano 0
+          r.attributes←toKeyValue/attrm
+         ⍝r.message←val
+          events,←r
+      :Else
+          LogError ⎕EN ⎕DM
+      :EndTrap
     ∇
 
     ∇ AddLink args;attrm;r;span
       :Access Public
-      ⍝ Add a link to another Span
-      ⍝ args, vov: Span [attributes]
-      ⍝ attributes as Key/value pairs
-      args←,⊆args
-      span←⊃args
-      r←⎕NS''
-      r.traceId←span.TraceId
-      r.spanId←span.SpanId
-      r.traceState←''
-      attrm←toKeyValueMatrix 1↓args
-      attrm←checkAttributes attrm
-      r.attributes←toKeyValue/attrm
-      links,←r
+     ⍝ Add a link to another Span
+     ⍝ args, vov: Span [attributes]
+     ⍝ attributes as Key/value pairs
+      :Trap DEBUG↓0
+          args←,⊆args
+          span←⊃args
+          r←⎕NS''
+          r.traceId←span.TraceId
+          r.spanId←span.SpanId
+          r.traceState←''
+          attrm←toKeyValueMatrix 1↓args
+          attrm←checkAttributes attrm
+          r.attributes←toKeyValue/attrm
+          links,←r
+      :Else
+          LogError ⎕EN ⎕DM
+      :EndTrap
       ⍝
     ∇
 
@@ -117,8 +132,13 @@
     ∇ r←GetHttpContext
       :Access Public
      ⍝ Returns the context (HTTP header) associated with this Span.
-      r←1 2⍴'traceparent'('00-',traceId,'-',spanId,'-01')
-     ⍝r⍪←'tracecontext' ''
+      r←0 2⍴''
+      :Trap DEBUG↓0
+          r←1 2⍴'traceparent'('00-',traceId,'-',spanId,'-01')
+         ⍝r⍪←'tracecontext' ''
+      :Else
+          LogError ⎕EN ⎕DM
+      :EndTrap
     ∇
 
     ∇ r←GetAttribute attr;lookup
@@ -127,49 +147,64 @@
      ⍝ key passed as argument.
      ⍝ attr, cv: attribute key
      ⍝ Return, Attribute value
-      lookup←attributes[;1]⍳⊆attr
-      :If lookup≤≢attributes
-          r←⊃attributes[lookup;2]
+      r←''
+      :Trap DEBUG↓0
+          lookup←attributes[;1]⍳⊆attr
+          :If lookup≤≢attributes
+              r←⊃attributes[lookup;2]
+          :Else
+              LogError 6('Attribute [',attr,'] not found')
+          :EndIf
       :Else
-          LogError 6('Attribute [',attr,'] not found')
-      :EndIf
+          LogError ⎕EN ⎕DM
+      :EndTrap
     ∇
 
     ∇ SetAttributes attrs;attrm
       :Access Public
      ⍝ Sets Attributes to the Span
      ⍝ ra, nv: 2-elements key val pairs
-      attrm←toKeyValueMatrix attrs
-      attributes←checkAttributes attributes⍪attrm
+      :Trap DEBUG↓0
+          attrm←toKeyValueMatrix attrs
+          attributes←checkAttributes attributes⍪attrm
+      :Else
+          LogError ⎕EN ⎕DM
+      :EndTrap
     ∇
 
     ∇ End;r
-⍝   Marks the end of Span execution.
       :Access Public
-      →isEnded/0
-      endTime←Now
-      isEnded←1
+     ⍝ Marks the end of Span execution.
+      :Trap DEBUG↓0
+          →isEnded/0
+          endTime←timeUnixNano 0
+          isEnded←1
      
-      r←scopeSpan.⎕NS''
-      r.name←name
-      r.traceId←traceId
-      r.parentSpanId←parentSpanId
-      r.spanId←spanId
-      r.startTimeUnixNano←timeUnixNano startTime
-      r.endTimeUnixNano←timeUnixNano endTime
-      r.kind←kind
-      r.attributes←toKeyValue/attributes
-      r.events←events
-      r.links←links
-      r.status←r.⎕NS''
-      r.status.code←statusCode
-      r.status.message←statusMessage
-      scopeSpan.spans,←r
-      ##.End ⎕THIS
+          r←scopeSpan.⎕NS''
+          r.name←name
+          r.traceId←traceId
+          r.parentSpanId←parentSpanId
+          r.spanId←spanId
+          r.startTimeUnixNano←startTime
+          r.endTimeUnixNano←endTime
+          r.kind←kind
+          r.attributes←toKeyValue/attributes
+          r.events←events
+          r.links←links
+          r.status←r.⎕NS''
+          r.status.code←statusCode
+          r.status.message←statusMessage
+          scopeSpan.spans,←r
+          ##.End ⎕THIS
+      :Else
+          LogError ⎕EN ⎕DM
+      :EndTrap
     ∇
 
     ∇ LogError msg
-      ##.LogError msg
+      :If DEBUG∧0≠⊃msg
+          ⎕←msg
+      :EndIf
     ∇
 
 :EndClass

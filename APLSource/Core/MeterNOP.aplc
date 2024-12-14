@@ -1,16 +1,22 @@
 :Class MeterNOP: IMeter
+    ∇ make
+      :Access Public Instance
+      :Implements Constructor
+      PS←(⊃⊃⎕CLASS ⎕THIS).##
+    ∇
+
     ∇ instrument←CreateCounter args
       :Implements Method IMeter.CreateCounter
-      instrument←##.CreateCounter ⎕THIS args
+      instrument←⎕NEW PS.InstrumentNOP
     ∇
 
     ∇ instrument←CreateGauge args
       :Implements Method IMeter.CreateGauge
-      instrument←##.CreateGauge ⎕THIS args
+      instrument←⎕NEW PS.InstrumentNOP
     ∇
 
     ∇ instrument←CreateHistogram args
       :Implements Method IMeter.CreateHistogram
-      instrument←##.CreateHistogram ⎕THIS args
+      instrument←⎕NEW PS.InstrumentNOP
     ∇
 :EndClass

@@ -12,24 +12,21 @@
     ∇
 
     ∇ r←GetContext
- ⍝     :Access Public Instance
       :Implements Method ITracer.GetContext
-      r←##.GetContext _scopeSpan
+      r←##.GetContext
     ∇
 
     ∇ r←GetActiveSpan
- ⍝     :Access Public Instance
       :Implements Method ITracer.GetActiveSpan
-      r←##.GetActiveSpan _scopeSpan
+      r←##.GetActiveSpan
     ∇
 
     ∇ span←{context}StartSpan name
- ⍝     :Access Public Instance
       :Implements Method ITracer.StartSpan
- ⍝ Create span with name in context.
- ⍝ If no context provided, create span in active span.
- ⍝ If no active span, create new root span.
- ⍝ Does not set the span as active (consider using StartActiveSpan for that).
+     ⍝ Create span with name in context.
+     ⍝ If no context provided, create span in active span.
+     ⍝ If no active span, create new root span.
+     ⍝ Does not set the span as active (consider using StartActiveSpan for that).
       :If 0=⎕NC'context'
           span←##.StartSpan _scopeSpan name
       :Else
@@ -38,11 +35,10 @@
     ∇
 
     ∇ span←{context}StartActiveSpan name;currentSpan;row;list
- ⍝     :Access Public Instance
       :Implements Method ITracer.StartActiveSpan
-⍝ Create span with name in active context.
- ⍝ If no active context, create new root span.
- ⍝ Sets the span as active.
+     ⍝ Create span with name in active context.
+     ⍝ If no active context, create new root span.
+     ⍝ Sets the span as active.
       :If 0=⎕NC'context'
           span←##.StartActiveSpan _scopeSpan name
       :Else

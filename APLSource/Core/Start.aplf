@@ -1,4 +1,5 @@
  Start cfg
+⍝ Initialise and start Notela using configuration in cfg
  ∆contextProvider←⎕NEW ContextProvider cfg
  ∆loggerProvider←⎕NEW LoggerProvider cfg
  ∆meterProvider←⎕NEW MeterProvider cfg
