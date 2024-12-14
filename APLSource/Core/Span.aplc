@@ -52,12 +52,12 @@
       End
     ∇
 
-    :Property Simple Kind,Name,Scope,SpanId,StatusCode,StatusMessage,TraceId,Tid ⍝EndTime,ParentSpanId,StartTime
+    :Property Simple Kind,Name,SpanId,StatusCode,StatusMessage,TraceId,Tid ⍝EndTime,ParentSpanId,StartTime
     :Access Public
         ∇ r←get ipa
           r←''
           :Trap DEBUG↓0
-              r←('Kind' 'Name' 'Scope' 'SpanId' 'StatusCode' 'StatusMessage' 'TraceId' 'Tid'⍳⊂ipa.Name)⊃kind name scopeSpan.scope spanId statusCode statusMessage traceId tid
+              r←('Kind' 'Name' 'SpanId' 'StatusCode' 'StatusMessage' 'TraceId' 'Tid'⍳⊂ipa.Name)⊃kind name spanId statusCode statusMessage traceId tid
           :EndTrap
         ∇
         ∇ set ipa
