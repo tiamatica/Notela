@@ -1,26 +1,26 @@
 :Class Counter: IInstrument
     :Include Tools
 ⍝
+    :Field Private Instance DEBUG←0
     :Field Private Instance name
     :Field Private Instance description
     :Field Private Instance values
     :Field Private Instance temporality
-    :Field Private Instance _scopeMetric
     :Field Private Instance _metric
 
-    ∇ make2(scopeMetric args)
+    ∇ make2(metric args debug)
       :Access Public
       :Implements Constructor
+      DEBUG←debug
       :If {0::1 ⋄ ~(⊃⊃⎕CLASS ⎕THIS).##.IMeterProvider∊⊃⎕CLASS ⍵}⊃⎕RSI
-          'Counter must be created from MeterProvider'⎕SIGNAL 982
+          'Counter must be created from MeterProvider'⎕SIGNAL 11
       :EndIf
-      _scopeMetric←scopeMetric
       name description←2↑⊆args
       values←0 2⍴0 ''
       startTime←timeUnixNano 0
       temporality←AGGREGATION_TEMPORALITY_DELTA
      
-      _metric←_scopeMetric.⎕NS''
+      _metric←metric
       _metric.name←name
       _metric.unit←''
       _metric.description←description
@@ -28,41 +28,46 @@
       _metric.sum.aggregationTemporality←temporality
       _metric.sum.isMonotonic←⊂'true'
       _metric.sum.dataPoints←⍬
-      _scopeMetric.metrics,←_metric
       ⍝
     ∇
 
     ∇ Record args;attrs;value
       :Implements Method IInstrument.Record
-      value←⊃args
-      attrs←{(⊂⍋⍵)⌷⍵}toKeyValueMatrix 1↓args
-      values⍪←value attrs
-      ##.ProcessMetrics
+      :Trap DEBUG↓0
+          value←⊃args
+          attrs←{(⊂⍋⍵)⌷⍵}toKeyValueMatrix 1↓args
+          values⍪←value attrs
+          ##.ProcessMetrics
+      :EndTrap
     ∇
 
     ∇ Clear
       :Implements Method IInstrument.Clear
-      _metric.sum.dataPoints←⍬
+      :Trap DEBUG↓0
+          _metric.sum.dataPoints←⍬
+      :EndTrap
     ∇
 
     ∇ Collect;sums
       :Implements Method IInstrument.Collect
-      :If 0<≢values
-          sums←values[;2]{(+/⍵),⍺}⌸values[;1]
-          _metric.sum.dataPoints←{
-              dp←⎕NS''
-              dp.asDouble←⍺
-              dp.attributes←toKeyValue/⍵
-              dp
-          }/sums
-          _metric.sum.dataPoints.startTimeUnixNano←⊂startTime
-          :If temporality=AGGREGATION_TEMPORALITY_DELTA
-              _metric.sum.dataPoints.timeUnixNano←⊂startTime←timeUnixNano 0
-              values←0⌿values
-          :Else
-              _metric.sum.dataPoints.timeUnixNano←⊂timeUnixNano 0
+      :Trap DEBUG↓0
+          :If 0<≢values
+              sums←values[;2]{(+/⍵),⍺}⌸values[;1]
+              _metric.sum.dataPoints←{
+                  dp←⎕NS''
+                  dp.asDouble←⍺
+                  dp.attributes←toKeyValue/⍵
+                  dp
+              }/sums
+              _metric.sum.dataPoints.startTimeUnixNano←⊂startTime
+              :If temporality=AGGREGATION_TEMPORALITY_DELTA
+                  _metric.sum.dataPoints.timeUnixNano←⊂startTime←timeUnixNano 0
+                  values←0⌿values
+              :Else
+                  _metric.sum.dataPoints.timeUnixNano←⊂timeUnixNano 0
+              :EndIf
           :EndIf
-      :EndIf
+      :EndTrap
     ∇
 
     AGGREGATION_TEMPORALITY_UNSPECIFIED ←0

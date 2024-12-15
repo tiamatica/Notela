@@ -6,6 +6,11 @@
       PS←(⊃⊃⎕CLASS ⎕THIS).##
     ∇
 
+    ∇ {r}←ForceFlush
+      :Implements Method ITracerProvider.ForceFlush
+      r←0
+    ∇
+
     ∇ r←GetTracer args
       :Implements Method ITracerProvider.GetTracer
       r←⎕NEW PS.TracerNOP
@@ -16,24 +21,24 @@
       r←0
     ∇
 
-    ∇ r←GetContext tracer
+    ∇ r←GetContext
       :Implements Method ITracerProvider.GetContext
       r←⍬
     ∇
 
-    ∇ r←GetActiveSpan tracer
+    ∇ r←GetActiveSpan
       :Implements Method ITracerProvider.GetActiveSpan
       r←⍬
     ∇
 
     ∇ r←{context}StartSpan args
       :Implements Method ITracerProvider.StartSpan
-      r←⎕NEW PS.Span(⊂'')
+      r←⎕NEW PS.Span(⍬'' '' '' '' 0)
     ∇
 
     ∇ r←{context}StartActiveSpan args
       :Implements Method ITracerProvider.StartActiveSpan
-      r←StartSpan args
+      r←⎕NEW PS.Span(⍬'' '' '' '' 0)
     ∇
 
 :EndClass

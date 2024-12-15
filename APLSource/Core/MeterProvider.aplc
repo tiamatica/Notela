@@ -1,6 +1,7 @@
 :Class MeterProvider: IMeterProvider
     :Include Tools
 
+    :Field Private Instance DEBUG←0
     :Field Private Instance _cfg←⍬
     :Field Private Instance _httpClt
     :Field Private Instance _instruments←⍬
@@ -14,12 +15,8 @@
       :Implements Constructor
     ⍝ cfg = Configuration instance
       PS←(⊃⊃⎕CLASS ⎕THIS).##
-      :If 9.2=⎕NC⊂'cfg'
-      :AndIf PS.API.Configuration≡⊃⊃⎕CLASS cfg
-          _cfg←cfg
-      :Else
-          'Requires a Configuration instance'⎕SIGNAL 11
-      :EndIf
+      _cfg←cfg
+      DEBUG←cfg.Debug
       _exportedTime←3⊃⎕AI
       _bufferLength←0
       _isShuttingDown←0
@@ -39,59 +36,98 @@
 
     ∇ r←GetMeter args;ind;scopeName;scopeVersion;attrs;scopeMetric
       :Implements Method IMeterProvider.GetMeter
-      ⍝ args = ScopeName [ScopeVersion] [attributes]
-      args←,⊆args
-      args←args,(1=≢args)/⊂_cfg.ServiceVersion
-      scopeName scopeVersion←2↑args
-      attrs←toKeyValueMatrix 2↓args
-      scopeMetric←_resourceMetric.⎕NS''
-      scopeMetric.(scope←⎕NS'')
-      scopeMetric.scope.(name version)←scopeName scopeVersion
-      scopeMetric.scope.attributes←toKeyValue/attrs
-      scopeMetric.metrics←⍬
-      _resourceMetric.scopeMetrics,←scopeMetric
-      r←⎕NEW PS.Meter(,scopeMetric)
+     ⍝ args = ScopeName [ScopeVersion] [attributes]
+      :Trap DEBUG↓0
+          args←,⊆args
+          args←args,(1=≢args)/⊂_cfg.ServiceVersion
+          scopeName scopeVersion←2↑args
+          attrs←toKeyValueMatrix 2↓args
+          scopeMetric←_resourceMetric.⎕NS''
+          scopeMetric.(scope←⎕NS'')
+          scopeMetric.scope.(name version)←scopeName scopeVersion
+          scopeMetric.scope.attributes←toKeyValue/attrs
+          scopeMetric.metrics←⍬
+          _resourceMetric.scopeMetrics,←scopeMetric
+          r←⎕NEW PS.Meter(,scopeMetric)
+      :Else
+          LogError ⎕EN ⎕DM
+          r←⎕NEW PS.MeterNOP
+      :EndTrap
     ∇
 
     ∇ {r}←Shutdown
       :Implements Method IMeterProvider.Shutdown
-      _isShuttingDown←1
-      r←ForceFlush
-      _instruments←⍬
+      r←1
+      :Trap DEBUG↓0
+          _isShuttingDown←1
+          r←ForceFlush
+          _instruments←⍬
+      :Else
+          LogError ⎕EN ⎕DM
+      :EndTrap
     ∇
 
     ∇ {r}←ForceFlush
       :Implements Method IMeterProvider.ForceFlush
-      ExportMetrics 1
-      r←0
+      r←1
+      :Trap DEBUG↓0
+          ExportMetrics 1
+          r←0
+      :Else
+          LogError ⎕EN ⎕DM
+      :EndTrap
     ∇
 
-    ∇ instrument←CreateCounter(scopeMetric args)
+    ∇ instrument←CreateCounter(scopeMetric args);metric
       :Implements Method IMeterProvider.CreateCounter
-      instrument←⎕NEW PS.Counter(scopeMetric args)
-      _instruments,←instrument
+      :Trap DEBUG↓0
+          metric←scopeMetric.⎕NS''
+          instrument←⎕NEW PS.Counter(metric args DEBUG)
+          scopeMetric.metrics,←metric
+          _instruments,←instrument
+      :Else
+          LogError ⎕EN ⎕DM
+          instrument←⎕NEW PS.InstrumentNOP
+      :EndTrap
     ∇
 
-    ∇ instrument←CreateGauge(scopeMetric args)
+    ∇ instrument←CreateGauge(scopeMetric args);metric
       :Implements Method IMeterProvider.CreateGauge
-      instrument←⎕NEW PS.Gauge(scopeMetric args)
-      _instruments,←instrument
+      :Trap DEBUG↓0
+          metric←scopeMetric.⎕NS''
+          instrument←⎕NEW PS.Gauge(metric args DEBUG)
+          scopeMetric.metrics,←metric
+          _instruments,←instrument
+      :Else
+          LogError ⎕EN ⎕DM
+          instrument←⎕NEW PS.InstrumentNOP
+      :EndTrap
     ∇
 
-    ∇ instrument←CreateHistogram(scopeMetric args)
+    ∇ instrument←CreateHistogram(scopeMetric args);metric
       :Implements Method IMeterProvider.CreateHistogram
-      instrument←⎕NEW PS.Histogram(scopeMetric args)
-      _instruments,←instrument
+      :Trap DEBUG↓0
+          metric←scopeMetric.⎕NS''
+          instrument←⎕NEW PS.Histogram(metric args DEBUG)
+          scopeMetric.metrics,←metric
+          _instruments,←instrument
+      :Else
+          LogError ⎕EN ⎕DM
+          instrument←⎕NEW PS.InstrumentNOP
+      :EndTrap
     ∇
 
     ∇ ProcessMetrics
       :Access Public Instance
-      _bufferLength+←1
-      ExportMetrics 0
+      :Trap DEBUG↓0
+          _bufferLength+←1
+          ExportMetrics 0
+      :Else
+          LogError ⎕EN ⎕DM
+      :EndTrap
     ∇
 
     ∇ ExportMetrics flush;callspace;exporter;fn;rs;scopeMetric;scopeSpan
-      :Access Public Instance
       ⍝ Export metrics for further processing such as batching, sampling and/or enrichment
       ⍝ flush = 1 to force flush buffered meters
       :If 0=≢_instruments
@@ -99,19 +135,17 @@
       :EndIf
       :If flush∧0<_bufferLength
       :OrIf (~_isShuttingDown)∧(_cfg.BatchSize≤_bufferLength)∧(_cfg.ExportInterval≤(3⊃⎕AI)-_exportedTime)
-          :Trap _cfg.Debug↓0
-              _instruments.Collect
-              :If 0=≢_cfg.Exporters
-                  PostHttpJson _metrics
-              :EndIf
-              :For exporter :In _cfg.Exporters
-                  callspace fn←exporter
-                  (callspace⍎fn)_metrics
-              :EndFor
-              _instruments.Clear
-              _exportedTime←3⊃⎕AI
-              _bufferLength←0
-          :EndTrap
+          _instruments.Collect
+          :If 0=≢_cfg.Exporters
+              PostHttpJson _metrics
+          :EndIf
+          :For exporter :In _cfg.Exporters
+              callspace fn←exporter
+              (callspace⍎fn)_metrics
+          :EndFor
+          _instruments.Clear
+          _exportedTime←3⊃⎕AI
+          _bufferLength←0
       :EndIf
     ⍝
     ∇
@@ -125,7 +159,7 @@
     ∇
 
     ∇ LogError msg
-      :If _cfg.Debug∧0≠⊃msg
+      :If DEBUG∧0≠⊃msg
           ⎕←1↓msg
       :EndIf
     ∇

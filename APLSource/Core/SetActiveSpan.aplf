@@ -1,2 +1,4 @@
-SetActiveSpan span
-∆contextProvider.SetActiveSpan span
+ SetActiveSpan span
+ :If 0≠⎕NC'∆contextProvider'
+     ∆contextProvider.SetActiveSpan span
+ :EndIf

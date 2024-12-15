@@ -41,8 +41,8 @@
           0<≢v:v
           ⍺
       }
-      _batchSize←1
-      _debug←1
+      _batchSize←100
+      _debug←0
       _exportInterval←120000
       _otelHttpUrl←'http://localhost:4318/'getEnv'OTEL_EXPORTER_OTLP_ENDPOINT'
       _otelHttpUrlLogs←(_otelHttpUrl,'v1/logs')getEnv'OTEL_EXPORTER_OTLP_LOGS_ENDPOINT'
@@ -50,7 +50,7 @@
       _otelHttpUrlTraces←(_otelHttpUrl,'v1/traces')getEnv'OTEL_EXPORTER_OTLP_TRACES_ENDPOINT'
       _serviceName←getEnv'OTEL_SERVICE_NAME'
       _serviceVersion←getEnv'OTEL_SERVICE_VERSION'
-      _logLevel←'info' getEnv'OTEL_LOG_LEVEL'
+      _logLevel←'info'getEnv'OTEL_LOG_LEVEL'
       _exporters←⍬
     ∇
 
@@ -70,8 +70,8 @@
         ∇ r←get
           r←_debug
         ∇
-        ∇ set ipa                         
-        ⎕SIGNAL (~ipa.NewValue∊0 1)/'Debug must be a boolean flag (0|1)'
+        ∇ set ipa
+          ⎕SIGNAL(~ipa.NewValue∊0 1)/'Debug must be a boolean flag (0|1)'
           _debug←ipa.NewValue
         ∇
     :EndProperty
@@ -84,6 +84,18 @@
         ∇ set ipa
     ⍝TODO: Validate
           _exportInterval←ipa.NewValue
+        ∇
+    :EndProperty
+
+    :Property Simple LogLevel
+    :Access Public
+        ∇ r←get
+          r←_logLevel
+        ∇
+        ∇ set ipa;valid
+          valid←'none' 'error' 'warn' 'info' 'debug' 'verbose'
+          ⎕SIGNAL(~ipa.NewValue∊valid)/'Loglevel must be one of: ',⍕valid
+          _logLevel←ipa.NewValue
         ∇
     :EndProperty
 

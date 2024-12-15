@@ -1,55 +1,60 @@
 :Class Histogram: IInstrument
     :Include Tools
 ⍝
+    :Field Private Instance DEBUG←0
+
     :Field Private Instance bounds
     :Field Private Instance description
     :Field Private Instance name
     :Field Private Instance startTime
     :Field Private Instance values
-    :Field Private Instance _scopeMetric
     :Field Private Instance _metric
 
-    ∇ make2(scopeMetric args)
+    ∇ make2(metric args debug)
       :Access Public
       :Implements Constructor
+      DEBUG←debug
       :If {0::1 ⋄ ~(⊃⊃⎕CLASS ⎕THIS).##.IMeterProvider∊⊃⎕CLASS ⍵}⊃⎕RSI
-          'Histogram must be created from Meter'⎕SIGNAL 982
+          'Histogram must be created from Meter'⎕SIGNAL 11
       :EndIf
-      _scopeMetric←scopeMetric 
       args←,⊆args
       name description bounds←args,(≢args)↓'' ''(0 5 10 15 10000)
       startTime←timeUnixNano 0
       values←0 2⍴0 ''
-
-      _metric←_scopeMetric.⎕NS''
+     
+      _metric←metric
       _metric.name←name
       _metric.unit←,'1'
       _metric.description←description
       _metric.(histogram←⎕NS'')
       _metric.histogram.aggregationTemporality←AGGREGATION_TEMPORALITY_CUMULATIVE
       _metric.histogram.dataPoints←⍬
-      _scopeMetric.metrics,←_metric
       ⍝
     ∇
 
     ∇ Record arg;value;attrs
       :Implements Method IInstrument.Record
-      value←⊃arg
-      attrs←{(⊂⍋⍵)⌷⍵}toKeyValueMatrix 1↓arg
-      values⍪←value attrs
-      ##.ProcessMetrics
+      :Trap DEBUG↓0
+          value←⊃arg
+          attrs←{(⊂⍋⍵)⌷⍵}toKeyValueMatrix 1↓arg
+          values⍪←value attrs
+          ##.ProcessMetrics
+      :EndTrap
     ∇
 
     ∇ Clear
       :Implements Method IInstrument.Clear
-      _metric.histogram.dataPoints←⍬
+      :Trap DEBUG↓0
+          _metric.histogram.dataPoints←⍬
+      :EndTrap
     ∇
 
-    ∇ Collect
+    ∇ Collect;dps
       :Implements Method IInstrument.Collect
-      :If 0<≢values
-          _metric.histogram.dataPoints←values[;2]{
-              dp←⎕NS''
+      :Trap DEBUG↓0
+          →(0=≢values)/0
+          dps←values[;2]{
+              dp←_metric.histogram.⎕NS''
               dp.count←≢⍵
               dp.sum←+/⍵
               dp.bucketCounts←{¯1+≢⍵}⌸(0,⍳≢bounds),bounds⍸⍵
@@ -59,10 +64,11 @@
               dp.attributes←toKeyValue/⊃⍺
               dp
           }⌸values[;1]
-          _metric.histogram.dataPoints.startTimeUnixNano←⊂startTime
-          _metric.histogram.dataPoints.timeUnixNano←⊂startTime←timeUnixNano 0
+          dps.startTimeUnixNano←⊂startTime
+          dps.timeUnixNano←⊂startTime←timeUnixNano 0
+          _metric.histogram.dataPoints←dps
           values←0⌿values
-      :EndIf
+      :EndTrap
     ∇
 
     AGGREGATION_TEMPORALITY_UNSPECIFIED ←0
