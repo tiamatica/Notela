@@ -9,10 +9,10 @@
  spanSub1←tracer.StartSpan'SubSpan1'
  spanSub2←tracer.StartSpan'SubSpan2'
 
- span.StatusCode←##.Notela.SpanStatusCode.OK
- spanSub1.(StatusCode StatusMessage)←##.Notela.SpanStatusCode.ERROR'Error msg'
- spanSub2.StatusCode←4
- Assert spanSub2.StatusCode≡##.Notela.SpanStatusCode.UNSET
+ span.statusCode←##.Notela.SpanStatusCode.OK
+ spanSub1.(statusCode statusMessage)←##.Notela.SpanStatusCode.ERROR'Error msg'
+ spanSub2.statusCode←4
+ Assert spanSub2.statusCode≡##.Notela.SpanStatusCode.UNSET
  ⎕DL?0
  spanSub1.End
  spanSub2.End

@@ -1,10 +1,10 @@
 :Class MeterProviderNOP: IMeterProvider
     :Field Private Instance _instruments←⍬
+    :Field Private Shared PS←##
 
     ∇ make
       :Access Public Instance
       :Implements Constructor
-      PS←(⊃⊃⎕CLASS ⎕THIS).##
     ∇
 
     ∇ r←GetMeter args

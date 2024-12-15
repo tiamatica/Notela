@@ -1,3 +1,2 @@
- TokenExporter trace;ref
- ref←⎕NS trace
- ref ⎕TPUT ∆TP+.5
+ TokenExporter data
+ data ⎕TPUT ∆TP+.5

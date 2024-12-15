@@ -18,6 +18,6 @@
 
  trace←##.GetTrace 0.1
  l←⊃⊃(⊃trace.resourceSpans.scopeSpans.(2⊃spans)).links
- Assert l.(spanId traceId)≡spanSub2.(SpanId TraceId)
+ Assert l.(spanId traceId)≡spanSub2.(spanId traceId)
  Assert 0∊⍴l.traceState
  ⍝

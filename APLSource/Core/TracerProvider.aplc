@@ -12,12 +12,13 @@
     :Field Private Instance _resourceSpan
     :Field Private Instance _isShuttingDown
 
+    :Field Private Shared PS←##
+
     ⍝ Tracer Provider initialization
     ∇ make cfg;resource
       :Access Public
       :Implements Constructor
       ⎕RL←⍬ 1
-      PS←(⊃⊃⎕CLASS ⎕THIS).##
       _cfgDebug←cfg.Debug
       _cfgBatchSize←cfg.BatchSize
       _cfgExporters←cfg.Exporters
@@ -85,13 +86,13 @@
           :AndIf ind≤≢context
               (traceId parentId)←¯1↓1↓'-'(≠⊆⊢)⊃context[ind;2]
           :ElseIf ~0∊⍴parent←PS.GetActiveSpan
-              traceId←parent.TraceId
-              parentId←parent.SpanId
+              traceId←parent.traceId
+              parentId←parent.spanId
           :Else
-              traceId←RandomHex 32
+              traceId←'0123456789ABCDEF'[?32⍴16]
               parentId←⊂'null'
           :EndIf
-          spanId←RandomHex 16
+          spanId←'0123456789ABCDEF'[?16⍴16]
      
           span←⎕NEW PS.Span(scopeSpan traceId parentId spanId name _cfgDebug _cfgLogLevel _cfgLoggers)
       :Else
@@ -139,7 +140,7 @@
           :If (flush∧0<spanBufferLength)∨(_cfgBatchSize≤spanBufferLength)
               ⎕TSYNC _threads
               :Hold '_traces'
-                  traces←⎕NS _traces
+                  traces←⎕JSON _traces
                   _resourceSpan.scopeSpans.spans←⊂⍬
               :EndHold
               _threads,←ExportSpans&traces
