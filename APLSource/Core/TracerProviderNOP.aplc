@@ -33,12 +33,12 @@
 
     ∇ r←{context}StartSpan args
       :Implements Method ITracerProvider.StartSpan
-      r←⎕NEW PS.Span(⍬'' '' '' '' 0)
+      r←⎕NEW PS.Span(⍬'' '' '' '' 0 0 ⍬)
     ∇
 
     ∇ r←{context}StartActiveSpan args
       :Implements Method ITracerProvider.StartActiveSpan
-      r←⎕NEW PS.Span(⍬'' '' '' '' 0)
+      r←⎕NEW PS.Span(⍬'' '' '' '' 0 0 ⍬)
     ∇
 
 :EndClass

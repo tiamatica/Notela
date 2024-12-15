@@ -1,6 +1,6 @@
  TestNestedSpan;tracer;span;trace;spans;sp;childSpan;csp;scopeSpans;parent;child;cS;cfg
  ##.Reset
- cfg←⎕NEW ##.Notela.Configuration(,⊂'TestTraces')
+ cfg←##.Notela.NewConfiguration'TestTraces'
  cfg.WithExporter'##.TokenExporter'
  cfg.BatchSize←3
  ##.Notela.Start cfg

@@ -1,6 +1,11 @@
  Start cfg
 ⍝ Initialise and start Notela using configuration in cfg
+ :If 9.2≠⎕NC⊂'cfg'
+ :OrIf Configuration≢⊃⊃⎕CLASS cfg
+     'cfg must be a Configuration instance'⎕SIGNAL 11
+ :EndIf
  ∆contextProvider←⎕NEW ContextProvider cfg
  ∆loggerProvider←⎕NEW LoggerProvider cfg
  ∆meterProvider←⎕NEW MeterProvider cfg
  ∆tracerProvider←⎕NEW TracerProvider cfg
+ ⍝

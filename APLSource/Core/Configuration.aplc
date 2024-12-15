@@ -11,30 +11,12 @@
     :Field Private Instance _serviceVersion
     :Field Private Instance _debug
     :Field Private Instance _logLevel
+    :Field Private Instance _loggers
     :Field Private Instance _exporters
 
-    ∇ make0
+    ∇ make0;getEnv
       :Access Public
       :Implements Constructor
-      init
-    ∇
-
-    ∇ make1(serviceName)
-      :Access Public
-      :Implements Constructor
-      init
-      ServiceName←serviceName
-    ∇
-
-    ∇ make2(serviceName serviceVersion)
-      :Access Public
-      :Implements Constructor
-      init
-      ServiceName←serviceName
-      ServiceVersion←serviceVersion
-    ∇
-
-    ∇ init;getEnv
       getEnv←{
           ⍺←''
           v←2 ⎕NQ'.' 'GetEnvironment'⍵
@@ -50,7 +32,8 @@
       _otelHttpUrlTraces←(_otelHttpUrl,'v1/traces')getEnv'OTEL_EXPORTER_OTLP_TRACES_ENDPOINT'
       _serviceName←getEnv'OTEL_SERVICE_NAME'
       _serviceVersion←getEnv'OTEL_SERVICE_VERSION'
-      _logLevel←'info'getEnv'OTEL_LOG_LEVEL'
+      LogLevel←'info'getEnv'OTEL_LOG_LEVEL'
+      _loggers←⍬
       _exporters←⍬
     ∇
 
@@ -94,8 +77,8 @@
         ∇
         ∇ set ipa;valid
           valid←'none' 'error' 'warn' 'info' 'debug' 'verbose'
-          ⎕SIGNAL(~ipa.NewValue∊valid)/'Loglevel must be one of: ',⍕valid
-          _logLevel←ipa.NewValue
+          ⎕SIGNAL(~(⊂ipa.NewValue)∊valid)/'Loglevel must be one of: ',⍕valid
+          _logLevel←(valid⍳⊂ipa.NewValue)-⎕IO
         ∇
     :EndProperty
 
@@ -172,12 +155,30 @@
         ∇
     :EndProperty
 
+    :Property Simple Loggers
+    :Access Public
+        ∇ r←get
+          r←_loggers
+        ∇
+    :EndProperty
+
     ∇ WithExporter arg;callspace
       :Access Public
       :If 0=10|⎕DR arg
           callspace←⊃⎕RSI
       :AndIf 3=callspace.⎕NC arg
           _exporters,←⊂callspace arg
+      :Else
+          'Argument must be an existing APL function'⎕SIGNAL 11
+      :EndIf
+    ∇
+
+    ∇ WithLogger arg;callspace
+      :Access Public
+      :If 0=10|⎕DR arg
+          callspace←⊃⎕RSI
+      :AndIf 3=callspace.⎕NC arg
+          _loggers,←⊂callspace arg
       :Else
           'Argument must be an existing APL function'⎕SIGNAL 11
       :EndIf

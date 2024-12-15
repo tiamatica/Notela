@@ -1,8 +1,12 @@
 :Class MeterProvider: IMeterProvider
     :Include Tools
 
-    :Field Private Instance DEBUG←0
-    :Field Private Instance _cfg←⍬
+    :Field Private Instance _cfgDebug←0
+    :Field Private Instance _cfgBatchSize
+    :Field Private Instance _cfgExporters
+    :Field Private Instance _cfgExportInterval
+    :Field Private Instance _cfgLoggers
+    :Field Private Instance _cfgLogLevel
     :Field Private Instance _httpClt
     :Field Private Instance _instruments←⍬
     :Field Private Instance _metrics←⍬
@@ -15,8 +19,12 @@
       :Implements Constructor
     ⍝ cfg = Configuration instance
       PS←(⊃⊃⎕CLASS ⎕THIS).##
-      _cfg←cfg
-      DEBUG←cfg.Debug
+      _cfgDebug←cfg.Debug
+      _cfgBatchSize←cfg.BatchSize
+      _cfgExporters←cfg.Exporters
+      _cfgLoggers←cfg.Loggers
+      _cfgLogLevel←cfg.LogLevel
+      _cfgExportInterval←cfg.ExportInterval
       _exportedTime←3⊃⎕AI
       _bufferLength←0
       _isShuttingDown←0
@@ -25,21 +33,21 @@
       _resourceMetric←_metrics.⎕NS''
       _metrics.resourceMetrics←,_resourceMetric
       resource←_resourceMetric.(resource←⎕NS'')
-      resource.attributes←toKeyValue/2 2⍴'service.name'_cfg.ServiceName'service.version'_cfg.ServiceVersion
+      resource.attributes←toKeyValue/2 2⍴'service.name'cfg.ServiceName'service.version'cfg.ServiceVersion
       _resourceMetric.scopeMetrics←⍬
      
       _httpClt←⎕NEW PS.HttpCommand
       _httpClt.Command←'post'
-      _httpClt.URL←_cfg.OtelHttpUrlMetrics
+      _httpClt.URL←cfg.OtelHttpUrlMetrics
       _httpClt.ContentType←'application/json'
     ∇
 
     ∇ r←GetMeter args;ind;scopeName;scopeVersion;attrs;scopeMetric
       :Implements Method IMeterProvider.GetMeter
      ⍝ args = ScopeName [ScopeVersion] [attributes]
-      :Trap DEBUG↓0
+      :Trap _cfgDebug↓0
           args←,⊆args
-          args←args,(1=≢args)/⊂_cfg.ServiceVersion
+          args←args,(1=≢args)/⊂''
           scopeName scopeVersion←2↑args
           attrs←toKeyValueMatrix 2↓args
           scopeMetric←_resourceMetric.⎕NS''
@@ -50,7 +58,7 @@
           _resourceMetric.scopeMetrics,←scopeMetric
           r←⎕NEW PS.Meter(,scopeMetric)
       :Else
-          LogError ⎕EN ⎕DM
+          logError
           r←⎕NEW PS.MeterNOP
       :EndTrap
     ∇
@@ -58,72 +66,72 @@
     ∇ {r}←Shutdown
       :Implements Method IMeterProvider.Shutdown
       r←1
-      :Trap DEBUG↓0
+      :Trap _cfgDebug↓0
           _isShuttingDown←1
           r←ForceFlush
           _instruments←⍬
       :Else
-          LogError ⎕EN ⎕DM
+          logError
       :EndTrap
     ∇
 
     ∇ {r}←ForceFlush
       :Implements Method IMeterProvider.ForceFlush
       r←1
-      :Trap DEBUG↓0
+      :Trap _cfgDebug↓0
           ExportMetrics 1
           r←0
       :Else
-          LogError ⎕EN ⎕DM
+          logError
       :EndTrap
     ∇
 
     ∇ instrument←CreateCounter(scopeMetric args);metric
       :Implements Method IMeterProvider.CreateCounter
-      :Trap DEBUG↓0
+      :Trap _cfgDebug↓0
           metric←scopeMetric.⎕NS''
-          instrument←⎕NEW PS.Counter(metric args DEBUG)
+          instrument←⎕NEW PS.Counter(metric args _cfgDebug)
           scopeMetric.metrics,←metric
           _instruments,←instrument
       :Else
-          LogError ⎕EN ⎕DM
+          logError
           instrument←⎕NEW PS.InstrumentNOP
       :EndTrap
     ∇
 
     ∇ instrument←CreateGauge(scopeMetric args);metric
       :Implements Method IMeterProvider.CreateGauge
-      :Trap DEBUG↓0
+      :Trap _cfgDebug↓0
           metric←scopeMetric.⎕NS''
-          instrument←⎕NEW PS.Gauge(metric args DEBUG)
+          instrument←⎕NEW PS.Gauge(metric args _cfgDebug)
           scopeMetric.metrics,←metric
           _instruments,←instrument
       :Else
-          LogError ⎕EN ⎕DM
+          logError
           instrument←⎕NEW PS.InstrumentNOP
       :EndTrap
     ∇
 
     ∇ instrument←CreateHistogram(scopeMetric args);metric
       :Implements Method IMeterProvider.CreateHistogram
-      :Trap DEBUG↓0
+      :Trap _cfgDebug↓0
           metric←scopeMetric.⎕NS''
-          instrument←⎕NEW PS.Histogram(metric args DEBUG)
+          instrument←⎕NEW PS.Histogram(metric args _cfgDebug)
           scopeMetric.metrics,←metric
           _instruments,←instrument
       :Else
-          LogError ⎕EN ⎕DM
+          logError
           instrument←⎕NEW PS.InstrumentNOP
       :EndTrap
     ∇
 
     ∇ ProcessMetrics
       :Access Public Instance
-      :Trap DEBUG↓0
+      :Trap _cfgDebug↓0
           _bufferLength+←1
           ExportMetrics 0
       :Else
-          LogError ⎕EN ⎕DM
+          logError
       :EndTrap
     ∇
 
@@ -134,12 +142,12 @@
           :Return
       :EndIf
       :If flush∧0<_bufferLength
-      :OrIf (~_isShuttingDown)∧(_cfg.BatchSize≤_bufferLength)∧(_cfg.ExportInterval≤(3⊃⎕AI)-_exportedTime)
+      :OrIf (~_isShuttingDown)∧(_cfgBatchSize≤_bufferLength)∧(_cfgExportInterval≤(3⊃⎕AI)-_exportedTime)
           _instruments.Collect
-          :If 0=≢_cfg.Exporters
+          :If 0=≢_cfgExporters
               PostHttpJson _metrics
           :EndIf
-          :For exporter :In _cfg.Exporters
+          :For exporter :In _cfgExporters
               callspace fn←exporter
               (callspace⍎fn)_metrics
           :EndFor
@@ -155,12 +163,8 @@
           _httpClt.Params←metrics
           res←_httpClt.Run
       :EndHold
-      LogError(200≠⊃res.HttpStatus)'Failed posting metric'
-    ∇
-
-    ∇ LogError msg
-      :If DEBUG∧0≠⊃msg
-          ⎕←1↓msg
+      :If ~res.IsOK
+          1 logMessage'Failed posting metric'
       :EndIf
     ∇
 

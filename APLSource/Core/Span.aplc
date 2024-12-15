@@ -1,7 +1,9 @@
 :Class Span
     :Include Tools
 
-    :Field Private Instance DEBUG←0
+    :Field Private Instance _cfgDebug←0
+    :Field Private Instance _cfgLoggers
+    :Field Private Instance _cfgLogLevel
     :Field Private Instance name
     :Field Private Instance traceId
     :Field Private Instance parentSpanId
@@ -30,7 +32,7 @@
           'Span must be created from tracer'⎕SIGNAL 11
       :EndIf
      
-      (scopeSpan traceId parentSpanId spanId name DEBUG)←args
+      (scopeSpan traceId parentSpanId spanId name _cfgDebug _cfgLogLevel _cfgLoggers)←args
       isEnded←0=≢scopeSpan
       startTime←timeUnixNano 0
       endTime←0
@@ -54,12 +56,12 @@
     :Access Public
         ∇ r←get ipa
           r←''
-          :Trap DEBUG↓0
+          :Trap _cfgDebug↓0
               r←('Kind' 'Name' 'SpanId' 'StatusCode' 'StatusMessage' 'TraceId'⍳⊂ipa.Name)⊃kind name spanId statusCode statusMessage traceId
           :EndTrap
         ∇
         ∇ set ipa
-          :Trap DEBUG↓0
+          :Trap _cfgDebug↓0
               →isEnded/0
               :Select ipa.Name
               :Case 'Name'
@@ -79,7 +81,7 @@
                   :EndIf
               :EndSelect
           :Else
-              LogError ⎕EN ⎕DM
+              logError
           :EndTrap
         ∇
     :EndProperty
@@ -89,7 +91,7 @@
      ⍝ Add a Span Event
      ⍝ args, vov: EventName [attributes]
      ⍝ attributes as Key/value pairs
-      :Trap DEBUG↓0
+      :Trap _cfgDebug↓0
           args←,⊆args
           attrm←toKeyValueMatrix 1↓args
           attrm←checkAttributes attrm
@@ -100,7 +102,7 @@
          ⍝r.message←val
           events,←r
       :Else
-          LogError ⎕EN ⎕DM
+          logError
       :EndTrap
     ∇
 
@@ -109,7 +111,7 @@
      ⍝ Add a link to another Span
      ⍝ args, vov: Span [attributes]
      ⍝ attributes as Key/value pairs
-      :Trap DEBUG↓0
+      :Trap _cfgDebug↓0
           args←,⊆args
           span←⊃args
           r←⎕NS''
@@ -121,7 +123,7 @@
           r.attributes←toKeyValue/attrm
           links,←r
       :Else
-          LogError ⎕EN ⎕DM
+          logError
       :EndTrap
       ⍝
     ∇
@@ -131,11 +133,11 @@
       :Access Public
      ⍝ Returns the context (HTTP header) associated with this Span.
       r←0 2⍴''
-      :Trap DEBUG↓0
+      :Trap _cfgDebug↓0
           r←1 2⍴'traceparent'('00-',traceId,'-',spanId,'-01')
          ⍝r⍪←'tracecontext' ''
       :Else
-          LogError ⎕EN ⎕DM
+          logError
       :EndTrap
     ∇
 
@@ -146,15 +148,15 @@
      ⍝ attr, cv: attribute key
      ⍝ Return, Attribute value
       r←''
-      :Trap DEBUG↓0
+      :Trap _cfgDebug↓0
           lookup←attributes[;1]⍳⊆attr
           :If lookup≤≢attributes
               r←⊃attributes[lookup;2]
           :Else
-              LogError 6('Attribute [',attr,'] not found')
+              2 LogMessage'Attribute [',attr,'] not found'
           :EndIf
       :Else
-          LogError ⎕EN ⎕DM
+          logError
       :EndTrap
     ∇
 
@@ -162,18 +164,18 @@
       :Access Public
      ⍝ Sets Attributes to the Span
      ⍝ ra, nv: 2-elements key val pairs
-      :Trap DEBUG↓0
+      :Trap _cfgDebug↓0
           attrm←toKeyValueMatrix attrs
           attributes←checkAttributes attributes⍪attrm
       :Else
-          LogError ⎕EN ⎕DM
+          logError
       :EndTrap
     ∇
 
     ∇ End;r
       :Access Public
      ⍝ Marks the end of Span execution.
-      :Trap DEBUG↓0
+      :Trap _cfgDebug↓0
           →isEnded/0
           endTime←timeUnixNano 0
           isEnded←1
@@ -195,14 +197,8 @@
           scopeSpan.spans,←r
           ##.End ⎕THIS
       :Else
-          LogError ⎕EN ⎕DM
+          logError
       :EndTrap
-    ∇
-
-    ∇ LogError msg
-      :If DEBUG∧0≠⊃msg
-          ⎕←msg
-      :EndIf
     ∇
 
 :EndClass

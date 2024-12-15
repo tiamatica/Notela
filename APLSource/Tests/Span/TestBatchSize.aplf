@@ -1,6 +1,6 @@
  TestBatchSize;tracer;cfg;span;trace;_;subSpan;subSpan1
  ##.Reset
- cfg←⎕NEW ##.Notela.Configuration(,⊂'TestTraces')
+ cfg←##.Notela.NewConfiguration'TestTraces'
  cfg.WithExporter'##.TokenExporter'
  cfg.BatchSize←3
  ##.Notela.Start cfg
