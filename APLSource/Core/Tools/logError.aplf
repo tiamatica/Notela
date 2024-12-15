@@ -1,0 +1,3 @@
+ logError
+⍝ Log error with extended information (stack)
+ 1 logMessage(⊂'⎕EN: ',⍕⎕EN),⎕DM,(1↓⎕XSI,¨'[',¨(⍕¨⎕LC),¨']')

@@ -1,0 +1,16 @@
+ lvl logMessage msg;loggers;callspace;fn;lines
+⍝ Log msg with error lvl
+ →(lvl>_cfgLogLevel)/0
+ :Trap _cfgDebug↓0
+     lines←,⊆msg
+     :If 0=≢_cfgLoggers
+         ⎕←↑lines
+     :EndIf
+     :For loggers :In _cfgLoggers
+         callspace fn←loggers
+         (callspace⍎fn)lines
+     :EndFor
+ :Else
+     ⎕←msg
+ :EndTrap
+    ⍝
