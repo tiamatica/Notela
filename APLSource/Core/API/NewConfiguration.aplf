@@ -1,0 +1,3 @@
+ r←NewConfiguration args
+⍝ Create a configuration object for Notela
+ r←##.NewConfiguration args

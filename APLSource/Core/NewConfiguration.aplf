@@ -1,0 +1,6 @@
+ r←NewConfiguration args;name;version
+⍝ Create new configuration and set name and optionally version
+ name version←2↑(,⊆args),⊂''
+ r←⎕NEW Configuration
+ r.ServiceName←name
+ r.ServiceVersion←version

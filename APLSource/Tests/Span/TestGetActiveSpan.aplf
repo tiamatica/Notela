@@ -1,6 +1,6 @@
  TestGetActiveSpan;tracer;noopSpan;span_main;ctxMain;ctxSub;activeSpan;tracer;notela;subSpan;subSpan1;cfg;trace
  ##.Reset
- cfg←⎕NEW ##.Notela.Configuration(,⊂'TestTraces')
+ cfg←##.Notela.NewConfiguration'TestTraces'
  cfg.WithExporter'##.TokenExporter'
  cfg.BatchSize←3
  ##.Notela.Start cfg

@@ -1,6 +1,6 @@
  TestSpanAttributes;tracer;span;trace;t;spans;attributes;key;value;vals;cfg
  ##.Reset
- cfg←⎕NEW ##.Notela.Configuration(,⊂'TestTraces')
+ cfg←##.Notela.NewConfiguration'TestTraces'
  cfg.WithExporter'##.TokenExporter'
  cfg.BatchSize←1
  ##.Notela.Start cfg
