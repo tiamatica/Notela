@@ -11,12 +11,13 @@
     :Field Private Instance _resourceLog
     :Field Private Instance _isShuttingDown
 
+    :Field Private Shared PS←##
+
     ⍝ Logger Provider initialization
     ∇ make cfg;resource
       :Access Public
       :Implements Constructor
       ⎕RL←⍬ 1
-      PS←(⊃⊃⎕CLASS ⎕THIS).##
       _cfgDebug←cfg.Debug
       _cfgBatchSize←cfg.BatchSize
       _cfgExporters←cfg.Exporters
@@ -75,7 +76,7 @@
      
           span←PS.GetActiveSpan
           :If 0<≢span
-              log.(traceId spanId)←span.(TraceId SpanId)
+              log.(traceId spanId)←span.(traceId spanId)
           :EndIf
           :Hold '_logs'
               scope.logRecords,←log
@@ -94,7 +95,7 @@
           bufferLength←+/≢¨_resourceLog.scopeLogs.logRecords
       :AndIf (flush∧0<bufferLength)∨(_cfgBatchSize≤bufferLength)
           :Hold '_logs'
-              logs←⎕NS _logs
+              logs←⎕JSON _logs
               _resourceLog.scopeLogs.logRecords←⊂⍬
           :EndHold
           ExportLogs&logs

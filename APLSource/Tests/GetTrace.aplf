@@ -1,2 +1,2 @@
  r←GetTrace timeout
- r←timeout ⎕TGET ∆TP+0.5
+ r←{0=≢⍵:⍵ ⋄ ⎕JSON⊃⍵}timeout ⎕TGET ∆TP+0.5

@@ -1,9 +1,9 @@
 :Class TracerProviderNOP: ITracerProvider
+    :Field Private Shared PS←##
 
     ∇ make
       :Access Public Instance
       :Implements Constructor
-      PS←(⊃⊃⎕CLASS ⎕THIS).##
     ∇
 
     ∇ {r}←ForceFlush

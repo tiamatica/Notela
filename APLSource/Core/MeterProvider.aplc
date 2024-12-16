@@ -14,11 +14,12 @@
     :Field Private Instance _bufferLength
     :Field Private Instance _isShuttingDown
 
+    :Field Private Shared PS←##
+
     ∇ make cfg;ind;name;version;resource
       :Access Public
       :Implements Constructor
     ⍝ cfg = Configuration instance
-      PS←(⊃⊃⎕CLASS ⎕THIS).##
       _cfgDebug←cfg.Debug
       _cfgBatchSize←cfg.BatchSize
       _cfgExporters←cfg.Exporters
@@ -135,7 +136,7 @@
       :EndTrap
     ∇
 
-    ∇ ExportMetrics flush;callspace;exporter;fn;rs;scopeMetric;scopeSpan
+    ∇ ExportMetrics flush;callspace;exporter;fn;rs;scopeMetric;scopeSpan;metrics
       ⍝ Export metrics for further processing such as batching, sampling and/or enrichment
       ⍝ flush = 1 to force flush buffered meters
       :If 0=≢_instruments
@@ -143,13 +144,14 @@
       :EndIf
       :If flush∧0<_bufferLength
       :OrIf (~_isShuttingDown)∧(_cfgBatchSize≤_bufferLength)∧(_cfgExportInterval≤(3⊃⎕AI)-_exportedTime)
-          _instruments.Collect
+          _instruments.Collect           
+          metrics←⎕JSON _metrics
           :If 0=≢_cfgExporters
-              PostHttpJson _metrics
+              PostHttpJson metrics
           :EndIf
           :For exporter :In _cfgExporters
               callspace fn←exporter
-              (callspace⍎fn)_metrics
+              (callspace⍎fn)metrics
           :EndFor
           _instruments.Clear
           _exportedTime←3⊃⎕AI

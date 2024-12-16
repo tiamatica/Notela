@@ -1,10 +1,10 @@
 :Class LoggerProviderNOP: ILoggerProvider
     ⍝ Logger Provider initialization     
+    :Field Private Shared PS←##
 
     ∇ make0
       :Access Public
       :Implements Constructor
-      PS←(⊃⊃⎕CLASS ⎕THIS).##
     ∇
 
     ∇ r←GetLogger args;ind;name;version;scopeName;scopeVersion

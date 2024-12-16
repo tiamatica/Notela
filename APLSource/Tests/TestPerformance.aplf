@@ -1,0 +1,23 @@
+ TestPerformance;cfg;cnt;span;tracer;dl;nm;span1;span2;span3;logger
+ cfg←Notela.NewConfiguration'TestPerformance'
+ cfg.WithExporter'TokenExporter'
+ cfg.BatchSize←100
+ Notela.Start cfg
+ tracer←Notela.GetTracer'TestPerformance'
+ logger←Notela.GetLogger'TestPerformance'
+ :For cnt :In ⍳10000
+     nm←'Request/',⍕cnt
+     span←tracer.StartActiveSpan nm
+     logger.Log nm,' - Hej'
+⍝     span1←tracer.StartSpan nm,'/1'
+⍝     span1.End
+⍝     span2←tracer.StartSpan nm,'/2'
+⍝     span2.End
+⍝     span3←tracer.StartSpan nm,'/3'
+⍝     span3.End
+     span.End
+ :EndFor
+
+ Notela.Stop
+
+⍝

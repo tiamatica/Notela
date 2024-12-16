@@ -2,84 +2,91 @@
     :Include Tools
 
     :Field Private Instance _cfgDebug←0
-    :Field Private Instance _cfgLoggers
-    :Field Private Instance _cfgLogLevel
-    :Field Private Instance name
-    :Field Private Instance traceId
-    :Field Private Instance parentSpanId
-    :Field Private Instance spanId
-    :Field Private Instance startTime
-    :Field Private Instance endTime
-    :Field Private Instance kind
-    :Field Private Instance attributes
+    :Field Private Instance _cfgLoggers←⍬
+    :Field Private Instance _cfgLogLevel←0
+    :Field Public Instance name←''
+    :Field Public Instance spanId←''
+    :Field Public Instance traceId←''
+    :Field Private Instance _parentSpanId←''
+    :Field Private Instance _startTime←0
+    :Field Private Instance _endTime←0
+    :Field Private Instance _kind←1              ⍝ PS.API.SpanKind.INTERNAL
+    :Field Private Instance _statusCode←0        ⍝ PS.API.SpanStatusCode.UNSET
+    :Field Private Instance _statusMessage←''
+    :Field Private Instance _attributes←0 2⍴''
 
-    :Field Private Instance events
+    :Field Private Instance events←⍬
    ⍝ An n-element array with events. Each element
    ⍝ contains an Event name and Event attribute.
 
     :Field Private Instance links←⍬
     :Field Private Instance isEnded←0
-    :Field Private Instance statusCode←0
-    :Field Private Instance statusMessage←''
     :Field Private Instance scopeSpan←⍬
+
+    :Field Private Shared PS←##
 
     ∇ make args
       :Access Public
       :Implements Constructor
-      PS←(⊃⊃⎕CLASS ⎕THIS).##
-      :If {0::1 ⋄ ~PS.ITracerProvider∊⊃⎕CLASS ⍵}⊃⎕RSI
-          isEnded←1
-          'Span must be created from tracer'⎕SIGNAL 11
-      :EndIf
-     
-      (scopeSpan traceId parentSpanId spanId name _cfgDebug _cfgLogLevel _cfgLoggers)←args
-      isEnded←0=≢scopeSpan
-      startTime←timeUnixNano 0
-      endTime←0
-      kind←PS.API.SpanKind.INTERNAL
-      attributes←0 2⍴⊂''
-      events←⍬
-      links←⍬
-      statusCode←PS.API.SpanStatusCode.UNSET
-      statusMessage←''
+      isEnded←0=≢⊃args
+      →isEnded/0
+      (scopeSpan traceId _parentSpanId spanId name _cfgDebug _cfgLogLevel _cfgLoggers)←args
+      _startTime←timeUnixNano 0
       ⍝
     ∇
 
-    ∇ die
-      :Access Private
-      :Implements Destructor
-      →isEnded/0
-      End
-    ∇
-
-    :Property Simple Kind,Name,SpanId,StatusCode,StatusMessage,TraceId ⍝EndTime,ParentSpanId,StartTime
+    :Property Simple kind
     :Access Public
         ∇ r←get ipa
-          r←''
-          :Trap _cfgDebug↓0
-              r←('Kind' 'Name' 'SpanId' 'StatusCode' 'StatusMessage' 'TraceId'⍳⊂ipa.Name)⊃kind name spanId statusCode statusMessage traceId
-          :EndTrap
+          r←_kind
         ∇
         ∇ set ipa
+          →isEnded/0
           :Trap _cfgDebug↓0
-              →isEnded/0
-              :Select ipa.Name
-              :Case 'Name'
-                  name←ipa.NewValue
-              :Case 'Kind'
-                  :If ipa.NewValue∊PS.API.SpanKind.(UNSPECIFIED INTERNAL SERVER CLIENT PRODUCER CONSUMER)
-                      kind←ipa.NewValue
-                  :EndIf
-              :Case 'StatusCode'
-                  :If ipa.NewValue∊PS.API.SpanStatusCode.(OK ERROR)
-                      statusCode←ipa.NewValue
-                  :EndIf
-              :Case 'StatusMessage'
-                  :If 0=10|⎕DR ipa.NewValue
-                  :AndIf 1=≡ipa.NewValue
-                      statusMessage←ipa.NewValue
-                  :EndIf
-              :EndSelect
+              :If (⊂ipa.NewValue)∊PS.API.SpanKind.(UNSPECIFIED INTERNAL SERVER CLIENT PRODUCER CONSUMER)
+                  _kind←ipa.NewValue
+              :Else
+                  2 logMessage'Ignored invalid kind: ',⍕ipa.NewValue
+              :EndIf
+          :Else
+              logError
+          :EndTrap
+        ∇
+    :EndProperty
+
+    :Property Simple statusCode
+    :Access Public
+        ∇ r←get ipa
+          r←_statusCode
+        ∇
+        ∇ set ipa
+          →isEnded/0
+          :Trap _cfgDebug↓0
+              :If (⊂ipa.NewValue)∊PS.API.SpanStatusCode.(OK ERROR)
+                  _statusCode←ipa.NewValue
+              :Else
+                  2 logMessage'Ignored invalid status code: ',⍕ipa.NewValue
+              :EndIf
+          :Else
+              logError
+          :EndTrap
+        ∇
+    :EndProperty
+
+    :Property Simple statusMessage
+    :Access Public
+        ∇ r←get ipa
+          r←_statusMessage
+        ∇
+        ∇ set ipa
+          →isEnded/0
+          :Trap _cfgDebug↓0
+              :If 0=10|⎕DR ipa.NewValue
+              :AndIf 1=≡ipa.NewValue
+                  _statusMessage←ipa.NewValue
+              :Else
+                  2 logMessage'Ignored invalid status message: ',⍕ipa.NewValue
+              :EndIf
           :Else
               logError
           :EndTrap
@@ -115,8 +122,8 @@
           args←,⊆args
           span←⊃args
           r←⎕NS''
-          r.traceId←span.TraceId
-          r.spanId←span.SpanId
+          r.traceId←span.traceId
+          r.spanId←span.spanId
           r.traceState←''
           attrm←toKeyValueMatrix 1↓args
           attrm←checkAttributes attrm
@@ -149,9 +156,9 @@
      ⍝ Return, Attribute value
       r←''
       :Trap _cfgDebug↓0
-          lookup←attributes[;1]⍳⊆attr
-          :If lookup≤≢attributes
-              r←⊃attributes[lookup;2]
+          lookup←_attributes[;1]⍳⊆attr
+          :If lookup≤≢_attributes
+              r←⊃_attributes[lookup;2]
           :Else
               2 LogMessage'Attribute [',attr,'] not found'
           :EndIf
@@ -166,7 +173,7 @@
      ⍝ ra, nv: 2-elements key val pairs
       :Trap _cfgDebug↓0
           attrm←toKeyValueMatrix attrs
-          attributes←checkAttributes attributes⍪attrm
+          _attributes←checkAttributes _attributes⍪attrm
       :Else
           logError
       :EndTrap
@@ -175,25 +182,25 @@
     ∇ End;r
       :Access Public
      ⍝ Marks the end of Span execution.
+      →isEnded/0
       :Trap _cfgDebug↓0
-          →isEnded/0
-          endTime←timeUnixNano 0
+          _endTime←timeUnixNano 0
           isEnded←1
      
           r←scopeSpan.⎕NS''
           r.name←name
           r.traceId←traceId
-          r.parentSpanId←parentSpanId
+          r.parentSpanId←_parentSpanId
           r.spanId←spanId
-          r.startTimeUnixNano←startTime
-          r.endTimeUnixNano←endTime
-          r.kind←kind
-          r.attributes←toKeyValue/attributes
+          r.startTimeUnixNano←_startTime
+          r.endTimeUnixNano←_endTime
+          r.kind←_kind
+          r.attributes←toKeyValue/_attributes
           r.events←events
           r.links←links
           r.status←r.⎕NS''
-          r.status.code←statusCode
-          r.status.message←statusMessage
+          r.status.code←_statusCode
+          r.status.message←_statusMessage
           scopeSpan.spans,←r
           ##.End ⎕THIS
       :Else

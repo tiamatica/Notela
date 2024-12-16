@@ -24,7 +24,9 @@
     ∇ RemoveActiveSpan span
       :Access Public
       :Trap DEBUG↓0
-          _activeSpans _threads/⍨←⊂~_activeSpans∊span
+          :If span∊_activeSpans
+              _activeSpans _threads/⍨←⊂~_activeSpans∊span
+          :EndIf
       :EndTrap
     ∇
 
