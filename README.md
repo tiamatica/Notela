@@ -37,4 +37,6 @@ Notela is a Cider project. Start Dyalog and then open the project with:
 
 ## Links
 
-[https://opentelemetry.io/](https://opentelemetry.io/)
+Read more about OpenTelemetry [https://opentelemetry.io/](https://opentelemetry.io/)
+
+For semantic conventions see [https://opentelemetry.io/docs/specs/semconv/](https://opentelemetry.io/docs/specs/semconv/)
