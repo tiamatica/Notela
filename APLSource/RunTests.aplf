@@ -1,10 +1,21 @@
-RunTests debug;cfg;batch;debug
-Core.HttpCommand←HttpCommand
-cfg←Mutsu.NewConfiguration
-cfg.TestSpaces←Tests
-cfg.SetupIncludePattern←'^Setup'
-cfg.TestIncludePattern←'^Test'
-cfg.CleanupIncludePattern←'^Cleanup'
-cfg.Debug←debug
-Mutsu.RunTests cfg
+ RunTests debug;cfg;batch;debug;cc
+ Core.HttpCommand←HttpCommand
+ cfg←Mutsu.NewConfiguration
+ cfg.TestSpaces←Tests
+ cfg.SetupIncludePattern←'^Setup'
+ cfg.TestIncludePattern←'^Test'
+ cfg.CleanupIncludePattern←'^Cleanup'
+ cfg.Debug←debug
+
+ cc←⎕NEW CodeCoverage(,⊂'#.Notela.Core')
+ 3 ⎕NDELETE'reports'
+ 3 ⎕MKDIR'reports'
+ cc.filename←'reports/Tests-Coverage'
+ cc.Start ⍬
+ Mutsu.RunTests cfg
+ cc.Stop ⍬
+ cc.Finalise ⍬
+ ⎕←1 CodeCoverage.ProcessDataAndCreateReport cc.filename
+
+
 ⍝

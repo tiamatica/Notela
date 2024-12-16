@@ -48,24 +48,22 @@
       :EndTrap
     ∇
 
-    ∇ Collect;sums
+    ∇ Collect;sums;dps
       :Implements Method IInstrument.Collect
       :Trap DEBUG↓0
           :If 0<≢values
-              sums←values[;2]{(+/⍵),⍺}⌸values[;1]
-              _metric.sum.dataPoints←{
-                  dp←⎕NS''
-                  dp.asDouble←⍺
-                  dp.attributes←toKeyValue/⍵
-                  dp
-              }/sums
-              _metric.sum.dataPoints.startTimeUnixNano←⊂startTime
+              sums←values[;2]{⍺,+/⍵}⌸values[;1]
+              dps←_metric.sum.⎕NS¨(≢sums)⍴⊂''
+              dps.asDouble←⊢/sums
+              dps.attributes←toKeyValue/¨⊣/sums
+              dps.startTimeUnixNano←⊂startTime
               :If temporality=AGGREGATION_TEMPORALITY_DELTA
-                  _metric.sum.dataPoints.timeUnixNano←⊂startTime←timeUnixNano 0
+                  dps.timeUnixNano←⊂startTime←timeUnixNano 0
                   values←0⌿values
               :Else
-                  _metric.sum.dataPoints.timeUnixNano←⊂timeUnixNano 0
+                  dps.timeUnixNano←⊂timeUnixNano 0
               :EndIf
+              _metric.sum.dataPoints←dps
           :EndIf
       :EndTrap
     ∇
