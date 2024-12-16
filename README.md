@@ -1,38 +1,40 @@
 # Notela - OpenTelemetry 
 
-Notela is a framework for Dyalog APL to facilitate creation telemetry data and sending it via http.
+Notela is a framework for Dyalog APL to facilitate creating and emitting telemetry data. It is delivered as a Tatin package and can be used both in applications directly or via libraries.
 
-Experimentation with OpenTelemetry Collector connected to a telemetry backend using Docker Compose.
+## How
 
-## Getting started
-### Aspire dashboard
-Start dashboard with docker compose:
+Notela will emit telemetry to a backend via HTTP/JSON payloads. For evaluation and testing you can use [aspire-dashboard](https://aspiredashboard.com/) which is a full-stack solution for collecting and visualizing telemetry data. An example docker compose file is provided in [aspire-dashboard/compose.yaml](aspire-dashboard/compose.yaml). Launch it with:
 
 ```
-cd aspire-dashboard
-docker compose up -d
+docker compose --file .\aspire-dashboard\compose.yaml up -d
 ```
 
-View dashboard on [localhost:18888](https://localhost:18888)
+With the backend up and running, you can start emitting telemetry with Notela:
 
-Sample docker compose files in [aspire-dashboard/compose.yaml](./aspire-dashboard/compose.yaml)
+```apl
+      ]TATIN.LoadPackages Notela
+      cfg←Notela.NewConfiguration'MyApp' '1.0.0'  ⍝ Create a configuration space 
+      Notela.Start cfg                            ⍝ Start Notela engine
+      tracer←Notela.GetTracer'MyApp' '1.0.0'      ⍝ Get a tracer to create spans
+      span←tracer.StartSpan'MyCalcs'              ⍝ Create a span around some work
+      ⎕DL 1                                      ⍝ Do some work
+      span.End                                    ⍝ Close span
+      Notela.Stop                                 ⍝ Stop Notela engine
+```
 
-OpenTelemetry Collector configuration is in [aspire-dashboard/otel-collector-config.yaml](./aspire-dashboard/otel-collector-config.yaml)
+View the dashboard on [localhost:18888](https://localhost:18888) and check out the `Traces` tab.
 
-## Demo
+For detailed examples of how to use Notela and the various configuration options, see [Usage.md](docs/Usage.md) and [Configuration.md](docs/Configuration.md).
 
-Notela is a Cider project, start Dyalog and then run:
+## Develop
+
+Notela is a Cider project. Start Dyalog and then open the project with:
 
 ```
-      ]CIDER.OpenProject path/to/projectfolder
+      ]CIDER.OpenProject path/to/Notela
 ```
 
-Step through the `#.Notela.Demo` and watch the dashboard in the browser.
+## Links
 
-## Links to documentation and specifications
-
-https://github.com/open-telemetry/opentelemetry-proto/blob/v1.0.0/opentelemetry/proto/trace/v1/trace.proto
-
-https://github.com/open-telemetry/opentelemetry-proto/blob/v1.0.0/opentelemetry/proto/common/v1/common.proto
-
-https://github.com/open-telemetry/semantic-conventions-java/blob/2be178a7fd62d1073fa9b4f0f0520772a6496e0b/build.gradle.kts#L96-L141
+[https://opentelemetry.io/](https://opentelemetry.io/)
