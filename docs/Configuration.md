@@ -1,56 +1,79 @@
 # Configuration
-The Configuration class  `Configuration` sets up a default configuration if there are no settings in the environment variables to retrieve. To customize the settings, first retrieve the default configuration, then adjust it with your desired settings. Or put all your settings in the environment variables.
-To set up the default configuration create an instance of the class:  
-`cfg←⎕NEW Notela.Configuration('Prod' '0.1.0')`
 
-## The Settings  
+The `Configuration` class is used to control the behaviour of Notela. Most of the properties can be set using environment variables, making it possible to initialise Notela without any configuration in code. To create a default configuration in code, you only need to specify the name and version of the instrumented application:
+
+```apl
+cfg←Notela.NewConfiguration 'MyApp' '1.1.0'
+```
+## Properties
  
 ### BatchSize  
 
-Default: `10`  
-Any value ≥ 1. Send the telemetry data when it reaches this amount.
+Default: `100`  
+Any value ≥ 1.   
+Buffer up telemetry data and export only when `BatchSize` is reached.
 
 ### Debug  
 Default: `0`  
-`0`: All tests are executed without logging errors.   
-`1`: Errors are logged.
+`0`: All exceptions are trapped and quietly ignored (internal logging).   
+`1`: Exception handling disabled to allow debugging.
 
 ### ExportInterval    
 Default: `120000` ms  
-The interval for how often to send metric data.  
+The interval for how often to export metric data.  
 
 ### OtelHttpUrl  
-Default: `http://localhost:4318/`  
+Default: `'http://localhost:4318/'`  
 Environment variable: `OTEL_EXPORTER_OTLP_ENDPOINT`  
 The root endpoint for telemetry data.
 
 ### OtelHttpUrlLogs  
-Default: `http://localhost:4318/v1/logs`  
+Default: `OtelHttpUrl,'v1/logs'`  
 Environment variable: `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT`  
-Endpoint for the logs data.
+Endpoint for the logs data. 
+If specified it must be a fully qualified url.
 
 ### OtelHttpUrlMetrics  
-Default: `http://localhost:4318/v1/metrics`  
+Default: `OtelHttpUrl,'v1/metrics'`  
 Environment variable: `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT`  
 Endpoint for the metrics data.
+If specified it must be a fully qualified url.
 
-### OtelHttpUrlTraces  
-Default: `http://localhost:4318/v1/traces`  
+### OtelHttpUrlTraces
+Default: `OtelHttpUrl,'v1/traces'`  
 Environment variable: `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`  
 Endpoint for the traces data.
+If specified it must be a fully qualified url.
 
 ### ServiceName  
-Default: `⍬`  
-Environment variable: `OTEL_SERVICE_NAME`  
-Optional name for the telemetry instance.  
+Default: `''`  
+Environment variable: `OTEL_SERVICE_NAME`
+Name for the telemetry instance.  
 
 ### ServiceVersion  
-Default: `⍬`  
+Default: `''`  
 Environment variable: `OTEL_SERVICE_VERSION`  
 Optional name for the telemetry instance.  
 
-### Exporters  
+### Exporters (read only)
 Default: `⍬`  
-By specifying a function name you can override sending data via http.  
-Use the function `WithExporter` to achieve that.  
-`cfg.WithExporter'TokenExporter'`
+Vector of exporter hooks registered using `WithExporter`.
+
+### Loggers (read only)
+Default: `⍬`  
+Vector of logger hooks registered using `WithLogger`.
+
+## Methods
+
+### WithExporter arg
+`arg` is the name of a function to invoke when telemetry is ready to be exported. If an exporter is registered, telemetry will not be posted via HTTP. Instead the hook will be invoked monadically with the serialised telemetry data (json) as the right argument.
+```apl 
+cfg.WithExporter'MyTelemetryExporter'
+```
+
+### WithLogger arg
+`arg` is the name of a function to invoke when internal logs are created. If a logger is registered, internal logs will not go to stdout. Instead the hook will be invoked monadically with the log record as the right argument.
+```apl 
+cfg.WithLogger'MyLoggerFn'
+```
+
