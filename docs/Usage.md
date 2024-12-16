@@ -72,6 +72,8 @@ To create a hiearchical structure of spans you can instead create active spans. 
       span.End
 ```
 
+Refer to the [Tracer](Tracer.md) documentation for all features available.
+
 ### Logger
 
 The `Logger` is used to create structured log entries. The logger is context aware and will link the log entry to the currently active span. This makes it possible to relate log entries to a specific unit of work.
@@ -80,6 +82,8 @@ The `Logger` is used to create structured log entries. The logger is context awa
       logger ← Notela.GetLogger'MyApp' '1.0.0'      ⍝ Get a logger to create logs
       logger.Log 'Initialising library'
 ```
+
+Refer to the [Logger](Logger.md) documentation for all features available.
 
 ### Meter
 
