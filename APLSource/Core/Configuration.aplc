@@ -14,15 +14,9 @@
     :Field Private Instance _loggers
     :Field Private Instance _exporters
 
-    ∇ make0;getEnv
+    ∇ make0
       :Access Public
       :Implements Constructor
-      getEnv←{
-          ⍺←''
-          v←2 ⎕NQ'.' 'GetEnvironment'⍵
-          0<≢v:v
-          ⍺
-      }
       _batchSize←100
       _debug←0
       _exportInterval←120000
@@ -36,6 +30,13 @@
       _loggers←⍬
       _exporters←⍬
     ∇
+
+      getEnv←{
+          ⍺←''
+          v←2 ⎕NQ'.' 'GetEnvironment'⍵
+          0<≢v:v
+          ⍺
+      }
 
     :Property Simple BatchSize
     :Access Public
