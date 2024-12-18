@@ -1,5 +1,5 @@
- r←GetTracer arg
+ r←GetTracer scope
  :If 0=⎕NC'∆tracerProvider'
      ∆tracerProvider←⎕NEW TracerProviderNOP
  :EndIf
- r←∆tracerProvider.GetTracer arg
+ r←∆tracerProvider.GetTracer scope

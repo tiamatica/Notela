@@ -1,5 +1,5 @@
- r←GetMeter arg
+ r←GetMeter scope
  :If 0=⎕NC'∆meterProvider'
      ∆meterProvider←⎕NEW MeterProviderNOP
  :EndIf
- r←∆meterProvider.GetMeter arg
+ r←∆meterProvider.GetMeter scope

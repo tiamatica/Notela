@@ -1,4 +1,4 @@
- r←GetLogger app
-⍝ Get logger instance for app
-⍝ app: name [version]
- r←##.GetLogger app
+ r←GetLogger scope
+⍝ Get logger instance for scope
+⍝ scope: name [version]
+ r←##.GetLogger scope
