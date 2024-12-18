@@ -21,9 +21,9 @@ To start using Notela in your application you simply install the package and add
 Depending on what type of telemetry you plan to emit (traces, logs, metrics) you then request a `Tracer`, `Logger` and/or a `Meter` instance. These instances can be kept as global instances used throughout your application (more efficient) or requested as and when needed.
 
 ```apl
-      tracer ← Notela.GetTracer'MyApp' '1.0.0'      ⍝ Get a tracer to create spans
-      logger ← Notela.GetLogger'MyApp' '1.0.0'      ⍝ Get a logger to create logs
-      meter  ← Notela.GetMeter'MyApp' '1.0.0'       ⍝ Get a meter to create metrics
+      tracer ← Notela.GetTracer''  ⍝ Get a tracer to create spans
+      logger ← Notela.GetLogger''  ⍝ Get a logger to create logs
+      meter  ← Notela.GetMeter''   ⍝ Get a meter to create metrics
 ```
 
 ## Teardown
@@ -49,7 +49,7 @@ Each type has its own controller described below.
 The `Tracer` is used to create spans around units of work. A span has a name and optionally attributes and other properties, but in its simplest form it is a named unit of work that has a start and end time. 
 
 ```apl
-      tracer ← Notela.GetTracer'MyApp' '1.0.0'      ⍝ Get a tracer to create spans
+      tracer ← Notela.GetTracer''  ⍝ Get a tracer to create spans
       span ← tracer.StartSpan 'Create order'
       ⍝ some code that generates an order
       span.End
@@ -58,7 +58,7 @@ The `Tracer` is used to create spans around units of work. A span has a name and
 To create a hiearchical structure of spans you can instead create active spans. An active span groups all spans created within it as child spans, making it possible to trace and measure sub-units of work.
 
 ```apl
-      tracer ← Notela.GetTracer'MyApp' '1.0.0'      ⍝ Get a tracer to create spans
+      tracer ← Notela.GetTracer''  ⍝ Get a tracer to create spans
       span ← tracer.StartActiveSpan 'Create order'
       subspan ← tracer.StartSpan 'Read DB'
       ⍝ read record from database
@@ -79,7 +79,7 @@ Refer to the [Tracer](Tracer.md) documentation for all features available.
 The `Logger` is used to create structured log entries. The logger is context aware and will link the log entry to the currently active span. This makes it possible to relate log entries to a specific unit of work.
 
 ```apl
-      logger ← Notela.GetLogger'MyApp' '1.0.0'      ⍝ Get a logger to create logs
+      logger ← Notela.GetLogger''  ⍝ Get a logger to create logs
       logger.Log 'Initialising library'
 ```
 
@@ -87,10 +87,10 @@ Refer to the [Logger](Logger.md) documentation for all features available.
 
 ### Meter
 
-The `Meter` is used to create instruments for measuring. This could be to measure resources or activities in the process.
+The `Meter` is used to create instruments for measuring. This could be used to measure resources or activities in the process.
 
 ```apl
-      meter ← Notela.GetMeter'MyApp' '1.0.0'       ⍝ Get a meter to create metrics
+      meter ← Notela.GetMeter''  ⍝ Get a meter to create metrics
       gauge ← meter.CreateGauge'workspace.used' 'WS used'
       gauge.Record 2000⌶1
 ```

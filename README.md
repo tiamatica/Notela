@@ -16,7 +16,7 @@ With the backend up and running, you can start emitting telemetry with Notela:
       ]TATIN.LoadPackages Notela
       cfg←Notela.NewConfiguration'MyApp' '1.0.0'  ⍝ Create a configuration space 
       Notela.Start cfg                            ⍝ Start Notela engine
-      tracer←Notela.GetTracer'MyApp' '1.0.0'      ⍝ Get a tracer to create spans
+      tracer←Notela.GetTracer''                   ⍝ Get a tracer to create spans
       span←tracer.StartSpan'MyCalcs'              ⍝ Create a span around some work
       ⎕DL 1                                      ⍝ Do some work
       span.End                                    ⍝ Close span
