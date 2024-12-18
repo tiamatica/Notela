@@ -1,15 +1,14 @@
- Demo;app;cfg;logger;meter;notela;r;span;span2;tracer;var;gauge
+ Demo;cfg;logger;meter;notela;r;span;span2;tracer;var;gauge
  notela←Tests.SetupCore
 ⍝ Configure telemetry at startup of application
- app←'Demo' '0.1.2'
- cfg←notela.NewConfiguration app
+ cfg←notela.NewConfiguration'Demo' '0.1.2'
  cfg.ExportInterval←10000
  cfg.BatchSize←2
  notela.Start cfg
 
- tracer←notela.GetTracer app
- logger←notela.GetLogger app
- meter←notela.GetMeter app
+ tracer←notela.GetTracer''
+ logger←notela.GetLogger''
+ meter←notela.GetMeter''
 
  gauge←meter.CreateGauge'workspace.used' 'WS used'
 
