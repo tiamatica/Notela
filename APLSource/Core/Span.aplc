@@ -13,7 +13,7 @@
     :Field Private Instance _kind←1              ⍝ PS.API.SpanKind.INTERNAL
     :Field Private Instance _statusCode←0        ⍝ PS.API.SpanStatusCode.UNSET
     :Field Private Instance _statusMessage←''
-    :Field Private Instance _attributes←0 2⍴''
+    :Field Private Instance _attributes←0 2⍴⊂''
 
     :Field Private Instance events←⍬
    ⍝ An n-element array with events. Each element
