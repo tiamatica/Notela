@@ -2,7 +2,7 @@
  notela←Tests.SetupCore
 ⍝ Configure telemetry at startup of application
  app←'Demo' '0.1.2'
- cfg←⎕NEW notela.Configuration app
+ cfg←notela.NewConfiguration app
  cfg.ExportInterval←10000
  cfg.BatchSize←2
  notela.Start cfg

@@ -1,4 +1,4 @@
- r←GetTracer app
-⍝ Get tracer instance for app
-⍝ app: name [version]
- r←##.GetTracer app
+ r←GetTracer scope
+⍝ Get tracer instance for scope
+⍝ scope: name [version]
+ r←##.GetTracer scope

@@ -1,5 +1,5 @@
- r←GetLogger arg
+ r←GetLogger scope
  :If 0=⎕NC'∆loggerProvider'
      ∆loggerProvider←⎕NEW LoggerProviderNOP
  :EndIf
- r←∆loggerProvider.GetLogger arg
+ r←∆loggerProvider.GetLogger scope
