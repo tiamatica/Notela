@@ -6,6 +6,9 @@
     :Field Private Instance _cfgExporters
     :Field Private Instance _cfgLoggers
     :Field Private Instance _cfgLogLevel
+    :Field Private Instance _cfgServiceName
+    :Field Private Instance _cfgServiceVersion
+
     :Field Private Instance _httpClt
     :Field Private Instance _logs
     :Field Private Instance _resourceLog
@@ -23,17 +26,22 @@
       _cfgExporters←cfg.Exporters
       _cfgLoggers←cfg.Loggers
       _cfgLogLevel←cfg.LogLevel
-      _logs←⎕NS''
-      _resourceLog←_logs.⎕NS''
-      _logs.resourceLogs←,_resourceLog
-      resource←_resourceLog.(resource←⎕NS'')
-      resource.attributes←toKeyValue/2 2⍴'service.name'cfg.ServiceName'service.version'cfg.ServiceVersion
-      _resourceLog.scopeLogs←⍬
-      _isShuttingDown←0
-      _httpClt←⎕NEW PS.HttpCommand
-      _httpClt.Command←'post'
-      _httpClt.URL←cfg.OtelHttpUrlLogs
-      _httpClt.ContentType←'application/json'
+      _cfgServiceName←cfg.ServiceName
+      _cfgServiceVersion←cfg.ServiceVersion
+     
+      :Trap _cfgDebug↓0
+          _logs←⎕NS''
+          _resourceLog←_logs.⎕NS''
+          _logs.resourceLogs←,_resourceLog
+          resource←_resourceLog.(resource←⎕NS'')
+          resource.attributes←toKeyValue/2 2⍴'service.name'_cfgServiceName'service.version'_cfgServiceVersion
+          _resourceLog.scopeLogs←⍬
+          _isShuttingDown←0
+          _httpClt←⎕NEW PS.HttpCommand
+          _httpClt.Command←'post'
+          _httpClt.URL←cfg.OtelHttpUrlLogs
+          _httpClt.ContentType←'application/json'
+      :EndTrap
      ⍝
     ∇
 
@@ -41,10 +49,15 @@
       :Implements Method ILoggerProvider.GetLogger
       ⍝ args = ScopeName [ScopeVersion] [attributes]
       :Trap _cfgDebug↓0
-          args←,⊆args
-          args←args,(1=≢args)/⊂''
-          scopeName scopeVersion←2↑args
-          attrs←toKeyValueMatrix 2↓args
+          :If 0=≢args
+              scopeName scopeVersion←_cfgServiceName _cfgServiceVersion
+              attrs←0 2⍴⊂''
+          :Else
+              args←,⊆args
+              args←args,(1=≢args)/⊂''
+              scopeName scopeVersion←2↑args
+              attrs←toKeyValueMatrix 2↓args
+          :EndIf
           scopeLog←_resourceLog.⎕NS''
           scopeLog.(scope←⎕NS'')
           scopeLog.scope.(name version)←scopeName scopeVersion
@@ -151,4 +164,3 @@
     ∇
 
 :EndClass
-
