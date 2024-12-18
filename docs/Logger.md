@@ -6,7 +6,7 @@ The logger is the controller for creating logs. It has the following method.
 
 Creates a log record with log severity specified in `severity`.
 
-`severity` must be a number defined in `Notela.LogSeverity`
+`severity` must be a number defined in `Notela.LogSeverity` (default is `INFO`).
 
 If `args` is a simple string or scalar, it is the body of the log message. Note that the body could be any of:
 
@@ -36,4 +36,18 @@ attrs⍪←'exception.message'    ⎕DMX.Message
 attrs⍪←'exception.type'       ⎕DMX.EM
 attrs⍪←'exception.stacktrace' (∊⎕XSI,¨'[',¨(⍕¨⎕LC),¨']',¨⎕UCS 10)
 20 logger.Log 'Calculation error' attrs
+```
+
+## {severity} LogError msg
+
+Creates a log record with log severity specified in `severity`.
+
+`severity` must be a number defined in `Notela.LogSeverity` (default is `ERROR`).
+
+`msg` is the body of the log record (as for `Log`).
+
+### Examples
+
+```apl
+ logger.LogError 'Calculation error'
 ```
