@@ -1,0 +1,16 @@
+ TestLogWithContext;span;cfg;logger;tracer;lg;sp
+ ##.Reset
+ cfg←##.Notela.NewConfiguration'Tests' '1.0.0'
+ cfg.WithExporter'##.TokenExporter'
+ cfg.BatchSize←1
+ ##.Notela.Start cfg
+ logger←##.Notela.GetLogger'TestLog'
+ tracer←##.Notela.GetTracer 'TestLogInSpan'
+ span←tracer.StartActiveSpan'SomeWork'
+ logger.Log'some work'
+ span.End
+ lg←##.GetTrace 0.1
+ sp←##.GetTrace 0.1
+ Assert (⊃sp.resourceSpans.(⊃scopeSpans).spans.spanId)≡⊃lg.resourceLogs.(⊃scopeLogs).logRecords.spanId
+ Assert 'some work'≡⊃⊃lg.resourceLogs.(⊃scopeLogs).logRecords.body.stringValue
+⍝
