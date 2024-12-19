@@ -30,7 +30,7 @@
               msg←⎕DMX.(EM,': ',Message,'; ',2⊃DM)
           :EndIf                                      
           stacktrace←∊(⎕DM,1↓⎕XSI,¨'[',¨(⍕¨⎕LC),¨']'),¨⎕UCS 10
-          attrs←0 2⍴⊂''
+          attrs←0 2⍴⍬
           attrs⍪←'exception.message'⎕DMX.Message
           attrs⍪←'exception.type'⎕DMX.EM
           attrs⍪←'exception.stacktrace' stacktrace

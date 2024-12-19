@@ -57,7 +57,7 @@
       :Trap _cfgDebug↓0
           :If 0=≢args
               scopeName scopeVersion←_cfgServiceName _cfgServiceVersion
-              attrs←0 2⍴⊂''
+              attrs←0 2⍴⍬
           :Else
               args←,⊆args
               args←args,(1=≢args)/⊂''
