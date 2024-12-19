@@ -62,7 +62,7 @@
               args←,⊆args
               args←args,(1=≢args)/⊂''
               scopeName scopeVersion←2↑args
-              attrs←toKeyValueMatrix 2↓args
+              attrs←checkAttributes toKeyValueMatrix 2↓args
           :EndIf
           scopeMetric←_resourceMetric.⎕NS''
           scopeMetric.(scope←⎕NS'')

@@ -100,8 +100,7 @@
      ⍝ attributes as Key/value pairs
       :Trap _cfgDebug↓0
           args←,⊆args
-          attrm←toKeyValueMatrix 1↓args
-          attrm←checkAttributes attrm
+          attrm←checkAttributes toKeyValueMatrix 1↓args
           r←⎕NS''
           r.name←⊃args
           r.timeUnixNano←timeUnixNano 0
@@ -125,8 +124,7 @@
           r.traceId←span.traceId
           r.spanId←span.spanId
           r.traceState←''
-          attrm←toKeyValueMatrix 1↓args
-          attrm←checkAttributes attrm
+          attrm←checkAttributes toKeyValueMatrix 1↓args
           r.attributes←toKeyValue/attrm
           links,←r
       :Else

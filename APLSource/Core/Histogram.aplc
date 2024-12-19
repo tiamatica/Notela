@@ -32,11 +32,15 @@
       ⍝
     ∇
 
-    ∇ Record arg;value;attrs
+    ∇ Record args;value;attrs
       :Implements Method IInstrument.Record
       :Trap DEBUG↓0
-          value←⊃arg
-          attrs←{(⊂⍋⍵)⌷⍵}toKeyValueMatrix 1↓arg
+          value←⊃args
+          :If 1<≢args
+              attrs←{(⊂⍋⍵)⌷⍵}checkAttributes toKeyValueMatrix 1↓args
+          :Else
+              attrs←0 2⍴⍬
+          :EndIf
           values⍪←value attrs
           ##.ProcessMetrics
       :EndTrap

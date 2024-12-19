@@ -1,5 +1,5 @@
  checkAttributes←{
- valid←0 1 3 5∊⍨10|⎕DR¨⍵[;2]
- valid∨←⍵[;2]∊⊂¨'true' 'false'
- {(⌽≠⌽⍵[;1])⌿⍵}valid⌿⍵
-}
+     valid←0 1 3 5∊⍨10|⎕DR¨⍵[;2]
+     valid∨←⍵[;2]∊⊂¨'true' 'false'
+     {(⌽≠⌽⍵[;1])⌿⍵}valid⌿⍵
+ }
