@@ -51,12 +51,12 @@
       :Trap _cfgDebug↓0
           :If 0=≢args
               scopeName scopeVersion←_cfgServiceName _cfgServiceVersion
-              attrs←0 2⍴⊂''
+              attrs←0 2⍴⍬
           :Else
               args←,⊆args
               args←args,(1=≢args)/⊂''
               scopeName scopeVersion←2↑args
-              attrs←toKeyValueMatrix 2↓args
+              attrs←checkAttributes toKeyValueMatrix 2↓args
           :EndIf
           scopeLog←_resourceLog.⎕NS''
           scopeLog.(scope←⎕NS'')
@@ -76,7 +76,7 @@
       :Trap _cfgDebug↓0
           args,←(≢args)↓(PS.API.LogSeverity.INFO'')''
           severity body←2↑args
-          attrs←toKeyValueMatrix 2↓args
+          attrs←checkAttributes toKeyValueMatrix 2↓args
           severity←2↑severity,⊂''
           log←scope.⎕NS''
           log.spanId←''

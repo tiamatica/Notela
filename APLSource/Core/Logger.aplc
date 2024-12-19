@@ -1,22 +1,40 @@
 :Class Logger
 
-    :Field Private Instance DEBUG←0
+    :Field Private Instance _cfgDebug
     :Field Private Instance _scopeLog
 
     ∇ make1(scopeLog debug)
       :Access Public
       :Implements Constructor
-      DEBUG←debug
+      _cfgDebug←debug
       _scopeLog←scopeLog
     ∇
 
     ∇ {severity}Log args
       :Access Public Instance
-      :Trap DEBUG↓0
+      :Trap _cfgDebug↓0
           :If 0=⎕NC'severity'
-              severity←1
+              severity←9  ⍝ API.LogSeverity.INFO
           :EndIf
           _scopeLog ##.Log(⊂severity),⊆args
+      :EndTrap
+    ∇
+
+    ∇ {severity}LogError msg;attrs;stacktrace
+      :Access Public Instance
+      :Trap _cfgDebug↓0
+          :If 0=⎕NC'severity'
+              severity←17 ⍝ API.LogSeverity.ERROR
+          :EndIf
+          :If 0=≢msg
+              msg←⎕DMX.(EM,': ',Message,'; ',2⊃DM)
+          :EndIf                                      
+          stacktrace←∊(⎕DM,1↓⎕XSI,¨'[',¨(⍕¨⎕LC),¨']'),¨⎕UCS 10
+          attrs←0 2⍴⍬
+          attrs⍪←'exception.message'⎕DMX.Message
+          attrs⍪←'exception.type'⎕DMX.EM
+          attrs⍪←'exception.stacktrace' stacktrace
+          _scopeLog ##.Log severity msg attrs
       :EndTrap
     ∇
 

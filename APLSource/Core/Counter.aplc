@@ -35,7 +35,11 @@
       :Implements Method IInstrument.Record
       :Trap DEBUG↓0
           value←⊃args
-          attrs←{(⊂⍋⍵)⌷⍵}toKeyValueMatrix 1↓args
+          :If 1<≢args
+              attrs←{(⊂⍋⍵)⌷⍵}checkAttributes toKeyValueMatrix 1↓args
+          :Else
+              attrs←0 2⍴⍬
+          :EndIf
           values⍪←value attrs
           ##.ProcessMetrics
       :EndTrap

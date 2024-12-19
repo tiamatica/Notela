@@ -13,7 +13,7 @@
     :Field Private Instance _kind←1              ⍝ PS.API.SpanKind.INTERNAL
     :Field Private Instance _statusCode←0        ⍝ PS.API.SpanStatusCode.UNSET
     :Field Private Instance _statusMessage←''
-    :Field Private Instance _attributes←0 2⍴⊂''
+    :Field Private Instance _attributes←0 2⍴⍬
 
     :Field Private Instance events←⍬
    ⍝ An n-element array with events. Each element
@@ -100,8 +100,7 @@
      ⍝ attributes as Key/value pairs
       :Trap _cfgDebug↓0
           args←,⊆args
-          attrm←toKeyValueMatrix 1↓args
-          attrm←checkAttributes attrm
+          attrm←checkAttributes toKeyValueMatrix 1↓args
           r←⎕NS''
           r.name←⊃args
           r.timeUnixNano←timeUnixNano 0
@@ -125,8 +124,7 @@
           r.traceId←span.traceId
           r.spanId←span.spanId
           r.traceState←''
-          attrm←toKeyValueMatrix 1↓args
-          attrm←checkAttributes attrm
+          attrm←checkAttributes toKeyValueMatrix 1↓args
           r.attributes←toKeyValue/attrm
           links,←r
       :Else
@@ -139,7 +137,7 @@
     ∇ r←GetHttpContext
       :Access Public
      ⍝ Returns the context (HTTP header) associated with this Span.
-      r←0 2⍴⊂''
+      r←0 2⍴⍬
       :Trap _cfgDebug↓0
           r←1 2⍴'traceparent'('00-',traceId,'-',spanId,'-01')
          ⍝r⍪←'tracecontext' ''
