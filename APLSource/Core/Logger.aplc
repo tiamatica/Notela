@@ -20,16 +20,20 @@
       :EndTrap
     ∇
 
-    ∇ {severity}LogError msg;attrs
+    ∇ {severity}LogError msg;attrs;stacktrace
       :Access Public Instance
       :Trap _cfgDebug↓0
           :If 0=⎕NC'severity'
               severity←17 ⍝ API.LogSeverity.ERROR
           :EndIf
+          :If 0=≢msg
+              msg←⎕DMX.(EM,': ',Message,'; ',2⊃DM)
+          :EndIf                                      
+          stacktrace←∊(⎕DM,1↓⎕XSI,¨'[',¨(⍕¨⎕LC),¨']'),¨⎕UCS 10
           attrs←0 2⍴⊂''
           attrs⍪←'exception.message'⎕DMX.Message
           attrs⍪←'exception.type'⎕DMX.EM
-          attrs⍪←'exception.stacktrace'(∊1↓⎕XSI,¨'[',¨(⍕¨⎕LC),¨']',¨⎕UCS 10)
+          attrs⍪←'exception.stacktrace' stacktrace
           _scopeLog ##.Log severity msg attrs
       :EndTrap
     ∇
