@@ -1,0 +1,17 @@
+ TestLogWithMultAttrib;span;cfg;logger;tracer;lg;sp
+ ##.Reset
+ cfg←##.Notela.NewConfiguration'Tests' '1.0.0'
+ cfg.WithExporter'##.TokenExporter'
+ cfg.BatchSize←1
+ ##.Notela.Start cfg
+ logger←##.Notela.GetLogger'TestLog'
+ attrs←0 2⍴⊂''
+ attrs⍪←'exception.message'    'invalid msg'
+ attrs⍪←'exception.type'       'type error'
+ attrs⍪←'exception.stacktrace' 'stack error'
+ ##.Notela.LogSeverity.ERROR4 logger.Log 'Errors' attrs
+ lg←##.GetTrace 0.1
+ Assert'exception.message' 'exception.type' 'exception.stacktrace'≡⊃⊃lg.resourceLogs.(⊃scopeLogs).logRecords.attributes.key
+ Assert'stack error'≡⊃⊃lg.resourceLogs.(⊃scopeLogs).logRecords.(3⊃attributes).value.stringValue
+ Assert 3=≢⊃⊃lg.resourceLogs.(⊃scopeLogs).logRecords.attributes.value.stringValue
+⍝
