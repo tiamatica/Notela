@@ -18,7 +18,7 @@ With the backend up and running, you can start emitting telemetry with Notela:
       Notela.Start cfg                            ⍝ Start Notela engine
       tracer←Notela.GetTracer''                   ⍝ Get a tracer to create spans
       span←tracer.StartSpan'MyCalcs'              ⍝ Create a span around some work
-      ⎕DL 1                                      ⍝ Do some work
+      ⎕DL 1                                       ⍝ Do some work
       span.End                                    ⍝ Close span
       Notela.Stop                                 ⍝ Stop Notela engine
 ```

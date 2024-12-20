@@ -28,7 +28,7 @@ Depending on what type of telemetry you plan to emit (traces, logs, metrics) you
 
 ## Teardown
 
-To gracefully shut down Notela and flush the buffers of pending telemetry data, you call the `Stop` method. Make usre to add this to the end of your application when shutting down.
+To gracefully shut down Notela and flush the buffers of pending telemetry data, you call the `Stop` method. Make sure to add this to the end of your application when shutting down.
 
 ```apl
       Notela.Stop                                 ⍝ Stop Notela engine
