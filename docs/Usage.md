@@ -67,7 +67,7 @@ To create a hiearchical structure of spans you can instead create active spans. 
       ⍝ compose an order record
       subspan.End
       subspan ← tracer.StartSpan 'Write DB'
-      ⍝ compose an order record
+      ⍝ write record to database
       subspan.End
       span.End
 ```
