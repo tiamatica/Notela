@@ -2,13 +2,14 @@
  ##.Reset
  cfg←##.Notela.NewConfiguration'TestTraces'
  cfg.WithExporter'##.TokenExporter'
+ cfg.WithLogger'##.InternalLogFn'
  cfg.BatchSize←3
  ##.Notela.Start cfg
  tracer←##.Notela.GetTracer'Notela' '0.1.0'
  span←tracer.StartActiveSpan'MainRequest'
  spanSub1←tracer.StartSpan'SubSpan1'
  spanSub2←tracer.StartSpan'SubSpan2'
-
+ Assert 'traceparent'≡⊃tracer.GetContext
  span.statusCode←##.Notela.SpanStatusCode.OK
  spanSub1.(statusCode statusMessage)←##.Notela.SpanStatusCode.ERROR'Error msg'
  spanSub2.statusCode←4
@@ -17,7 +18,7 @@
  spanSub1.End
  spanSub2.End
  span.End
-
+ Assert ##.InternalLogFn ''
  trace←##.GetTrace 0.1
  Assert(2,⊂'Error msg')(0 '')(1 '')≡⊃⊃trace.resourceSpans.scopeSpans.(spans).status.(code message)
  ⍝

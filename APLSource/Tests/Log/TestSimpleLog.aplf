@@ -1,12 +1,15 @@
- TestSimpleLog;lg;logger
+ TestSimpleLog;lg;logger;cfg
  ##.Reset
  cfg←##.Notela.NewConfiguration'Tests' '1.0.0'
  cfg.WithExporter'##.TokenExporter'
- cfg.BatchSize←1
+ cfg.BatchSize←2
  ##.Notela.Start cfg
  logger←##.Notela.GetLogger''
 
  logger.Log'LogBodyTest'
+ lg←##.GetTrace 0.1
+ Assert⍬≡lg
+ ##.Notela.Flush
  lg←##.GetTrace 0.1
  Assert'LogBodyTest'≡⊃⊃lg.resourceLogs.(⊃scopeLogs).logRecords.body.stringValue
 ⍝

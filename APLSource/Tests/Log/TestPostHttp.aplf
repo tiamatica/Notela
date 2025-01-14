@@ -1,0 +1,16 @@
+ TestPostHttp;lg;cfg;logger;webservice
+ ##.Reset
+ webservice←⎕NEW #.Notela.Jarvis(8092 ## 'JSON')
+ webservice.Start
+ cfg←##.Notela.NewConfiguration'Tests' '1.0.0'
+ cfg.BatchSize←2
+ cfg.OtelHttpUrlLogs←'http://localhost:8092/send'
+ ##.Notela.Start cfg
+
+ logger←##.Notela.GetLogger''
+ logger.Log'PostHttp'
+ ##.Notela.Flush
+ lg←##.GetTrace 1
+ Assert ∧/'PostHttp'∊lg
+ webservice.Stop
+⍝

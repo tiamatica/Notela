@@ -1,0 +1,10 @@
+ {r}←InternalLogFn msg
+ :if 0≠≢msg
+    intlog←1
+    :Return
+ :EndIf
+ :If ''≡msg
+    r←intlog
+ :EndIf
+ intlog←0
+ ⍝
