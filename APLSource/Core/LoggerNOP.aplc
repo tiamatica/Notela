@@ -9,4 +9,8 @@
       :Access Public Instance
     ∇
 
+    ∇ {severity}LogError args
+      :Access Public Instance
+    ∇
+
 :EndClass
