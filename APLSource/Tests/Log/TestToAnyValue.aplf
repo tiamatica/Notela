@@ -1,0 +1,14 @@
+ TestToAnyValue;cfg;logger;tt;tr
+ tt←1 2⍴'aa' 'bb'
+ ##.Reset
+ cfg←##.Notela.NewConfiguration'Tests' '1.0.0'
+ ##.Notela.Start cfg
+ logger←##.Notela.GetLogger'TestLog'
+ logger.Log 3,33
+ logger.Log ⊂tt
+ logger.Log tt
+
+ tr←##.Notela.GetTracer'ts'
+ tt←tr tr
+ logger.Log tt
+⍝

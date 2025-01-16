@@ -1,0 +1,30 @@
+ TestNOP;tNOP;instr;logger
+ ##.Reset
+ tNOP←##.Notela.GetLogger''
+ tNOP.Log 'testNOPLog'
+ Assert 326≡⎕DR tNOP
+ tNOP←##.Notela.GetMeter''
+ instr←tNOP.CreateCounter''
+ instr←tNOP.CreateGauge''
+ instr←tNOP.CreateHistogram''
+
+ instr←tNOP.##.CreateCounter('' '')
+ instr←tNOP.##.CreateGauge('' '')
+ instr←tNOP.##.CreateHistogram('' '')
+
+ instr←tNOP.##.Shutdown
+ instr←tNOP.##.ForceFlush
+
+ tNOP←##.Notela.GetTracer''
+ Assert 326≡⎕DR tNOP
+ instr←tNOP.GetActiveSpan
+ instr←tNOP.GetContext
+ instr←tNOP.StartActiveSpan ''
+ instr←tNOP.StartSpan ''
+ instr←tNOP.##.ForceFlush
+ instr←tNOP.##.Shutdown
+ instr←tNOP.##.GetContext
+ instr←tNOP.##.GetActiveSpan
+ instr←tNOP.##.StartSpan ''
+ instr←tNOP.##.StartActiveSpan ''
+⍝
