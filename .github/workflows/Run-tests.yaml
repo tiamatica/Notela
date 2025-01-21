@@ -1,4 +1,5 @@
 name: Run Tests
+timeout-minutes: 3
 run-name: Run tests ${{ github.ref_name}}.${{ github.run_id}}-${{ github.run_number}}.${{ github.run_attempt}}
 on:
   push:
@@ -7,6 +8,7 @@ on:
 jobs:
   Run-Tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
       - name: Check out code
         uses: actions/checkout@v4

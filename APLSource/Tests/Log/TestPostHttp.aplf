@@ -1,4 +1,8 @@
  TestPostHttp;lg;cfg;logger;webservice
+ :If 0<⎕NC 'GITHUB_ACTIONS'
+    :AndIf 0<GITHUB_ACTIONS
+        Skip'PostHttp not available on Github'
+ :EndIf
  ##.Reset
  webservice←⎕NEW #.Notela.Jarvis(8092 ## 'JSON')
  webservice.Start

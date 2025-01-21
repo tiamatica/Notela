@@ -1,0 +1,17 @@
+ TestContext;tracer;span;activeSpan;cfg;ctx;span2;span_sub;ctxMain
+ ##.Reset
+ cfg←##.Notela.NewConfiguration'TestTraces'
+ cfg.WithExporter'##.TokenExporter'
+ cfg.BatchSize←1
+ ##.Notela.Start cfg
+ tracer←##.Notela.GetTracer'Notela' '0.1.0'
+ span←tracer.StartActiveSpan'MainRequest'
+ Assert 'MainRequest'≡tracer.GetActiveSpan.name
+ ctx←tracer.GetContext
+ span2←ctx tracer.StartActiveSpan'MainRequestWithContext'
+ Assert 'MainRequestWithContext'≡tracer.GetActiveSpan.name
+ span_sub←ctx tracer.StartSpan'SubSpan'
+ Assert span.traceId≡span_sub.traceId
+ span.End
+ span2.End
+ ⍝
