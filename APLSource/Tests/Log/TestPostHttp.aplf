@@ -2,19 +2,19 @@
  :If 0<⎕NC 'GITHUB_ACTIONS'
     :AndIf 0<GITHUB_ACTIONS
         Skip'PostHttp not available on Github'
+    :Return
  :EndIf
-⍝ ##.Reset
-⍝ webservice←⎕NEW #.Notela.Jarvis(8092 ## 'JSON')
-⍝ webservice.Start
-⍝ cfg←##.Notela.NewConfiguration'Tests' '1.0.0'
-⍝ cfg.BatchSize←2
+ ##.Reset
+ webservice←⎕NEW #.Notela.Jarvis(4318 ## 'JSON')
+ webservice.Start
+ cfg←##.Notela.NewConfiguration'Tests' '1.0.0'
+ cfg.BatchSize←1
 ⍝ cfg.OtelHttpUrlLogs←'http://localhost:8092/send'
-⍝ ##.Notela.Start cfg
-⍝
-⍝ logger←##.Notela.GetLogger''
-⍝ logger.Log'PostHttp'
-⍝ ##.Notela.Flush
-⍝ lg←##.GetTrace 1
-⍝ Assert ∧/'PostHttp'∊lg
-⍝ webservice.Stop
+ ##.Notela.Start cfg
+
+ logger←##.Notela.GetLogger''
+ logger.Log'PostHttp'
+ lg←##.GetTrace 1
+ Assert ∧/'PostHttp'∊lg
+ webservice.Stop
 ⍝
