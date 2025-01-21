@@ -21,8 +21,10 @@ jobs:
           password: ${{ secrets.AZURE_ACR_PWD }}
 
       - name: Display GITHUB_ACTIONS value
-        run: echo "GITHUB_ACTIONS is set to: $GITHUB_ACTIONS"
-        
+          env:
+            GITHUB_ACTIONS: ${{ github.workflow }}
+          run: echo "GITHUB_ACTIONS is set to: $GITHUB_ACTIONS"
+            
       - name: Run tests using Docker
         timeout-minutes: 3  
         run: >
