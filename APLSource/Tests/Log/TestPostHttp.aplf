@@ -1,6 +1,5 @@
  TestPostHttp;lg;cfg;logger;webservice
  :If 0<≢2 ⎕NQ'.' 'GetEnvironment' 'GITHUB_TOKEN'
-    ⎕←'LogGITHUB_TOKEN'
     Skip'PostHttp not available on Github'
  :EndIf
  ##.Reset
