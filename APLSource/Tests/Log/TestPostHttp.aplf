@@ -1,15 +1,14 @@
  TestPostHttp;lg;cfg;logger;webservice
- :If 0<⎕NC 'GITHUB_ACTIONS'
-    :AndIf 0<GITHUB_ACTIONS
-        Skip'PostHttp not available on Github'
-    :Return
+ :If 0<≢2 ⎕NQ'.' 'GetEnvironment' 'GITHUB_TOKEN'
+    ⎕←'LogGITHUB_TOKEN'
+    Skip'PostHttp not available on Github'
  :EndIf
  ##.Reset
  webservice←⎕NEW #.Notela.Jarvis(4318 ## 'JSON')
  webservice.Start
  cfg←##.Notela.NewConfiguration'Tests' '1.0.0'
  cfg.BatchSize←1
-⍝ cfg.OtelHttpUrlLogs←'http://localhost:8092/send'
+ cfg.OtelHttpUrlLogs←'http://localhost:4318/send'
  ##.Notela.Start cfg
 
  logger←##.Notela.GetLogger''

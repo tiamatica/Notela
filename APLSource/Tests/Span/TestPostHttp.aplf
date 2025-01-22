@@ -1,14 +1,14 @@
  TestPostHttp;cfg;webservice;tracer;span;tr
- :If 0<⎕NC 'GITHUB_ACTIONS'
-    :AndIf 0<GITHUB_ACTIONS
-        Skip'PostHttp not available on Github'
+ :If 0<≢2 ⎕NQ'.' 'GetEnvironment' 'GITHUB_TOKEN'
+    ⎕←'SpanGITHUB_TOKEN'
+    Skip'PostHttp not available on Github'
  :EndIf
 ⍝ ##.Reset
-⍝ webservice←⎕NEW #.Notela.Jarvis(8092 ## 'JSON')
+⍝ webservice←⎕NEW #.Notela.Jarvis(4318 ## 'JSON')
 ⍝ webservice.Start
 ⍝ cfg←##.Notela.NewConfiguration'TestTraces'
 ⍝ cfg.BatchSize←1
-⍝ cfg.OtelHttpUrlTraces←'http://localhost:8092/send'
+⍝ cfg.OtelHttpUrlTraces←'http://localhost:4318/send'
 ⍝ ##.Notela.Start cfg
 ⍝ tracer←##.Notela.GetTracer'TestSimpleSpan'
 ⍝ span←tracer.StartActiveSpan'MainRequest'

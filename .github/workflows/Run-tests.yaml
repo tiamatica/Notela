@@ -21,7 +21,7 @@ jobs:
           password: ${{ secrets.AZURE_ACR_PWD }}
 
       - name: Run tests using Docker
-        timeout-minutes: 3  
+        timeout-minutes: 2 
         run: >
           chmod -R 777 ${{ github.workspace }};
           docker run
