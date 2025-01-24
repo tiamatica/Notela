@@ -1,5 +1,5 @@
  TestSpanGetAttribute;tracer;span;trace;cfg;mt
- mt←2 4'aabb'
+ mt←2 4⍴'aabb'
  ##.Reset
  cfg←##.Notela.NewConfiguration'TestTraces'
  cfg.WithExporter'##.TokenExporter'

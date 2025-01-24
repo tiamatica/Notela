@@ -165,15 +165,12 @@
       :EndTrap
     ∇
 
-    ∇ SetAttributes attrs;attrm;maskedattrs
+    ∇ SetAttributes attrs;attrm
       :Access Public
      ⍝ Sets Attributes to the Span
-     ⍝ ra, nv: 2-elements key val pairs 
-     maskedattrs←attrs   
-     maskedattrs←(~{⊃¨⊃¨∨/⍵}¨{1<¨⍵}{(⍴⍴)¨⍵}¨attrs)/attrs 
-     maskedattrs←({~∨/⍵}¨{0>≡⍵}¨¨maskedattrs)/maskedattrs
+     ⍝ ra, nv: 2-elements key val pairs
       :Trap _cfgDebug↓0
-          attrm←toKeyValueMatrix maskedattrs
+          attrm←toKeyValueMatrix attrs
           _attributes←checkAttributes _attributes⍪attrm
       :Else
           logError
