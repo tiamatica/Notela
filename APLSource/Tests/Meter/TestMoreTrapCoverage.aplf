@@ -1,15 +1,17 @@
- TestMoreTrapCoverage;counter;meter;mtr;mc;cfg
+ TestMoreTrapCoverage;counter;meter;mtr;mc;cfg;tracer;gauge;histo;span
  ##.Reset
  cfg←##.Notela.NewConfiguration'TestMeter' '0.1.0'
  cfg.ExportInterval←0
+⍝ cfg.WithLogger ''
  cfg.WithExporter'##.TokenExporter'
  cfg.BatchSize←1
  ##.Notela.Start cfg
  meter←##.Notela.GetMeter''
+ tracer←##.Notela.GetTracer''
 
- counter←meter.CreateCounter 'aplerrors'
+ counter←meter.CreateCounter  ⎕THIS
+ gauge←meter.CreateGauge ⎕THIS
+ histo←meter.CreateHistogram ⎕THIS 1 # ## 'aa'
  counter.Record 15 'exception.type' 11
- mtr←##.GetTrace 0.1
- mc←mtr.(⊃resourceMetrics).(⊃scopeMetrics).(⊃metrics)
- Assert'aplerrors'≡mc.name
+ tracer←##.Notela.GetTracer'TestSimpleSpan'
  ⍝

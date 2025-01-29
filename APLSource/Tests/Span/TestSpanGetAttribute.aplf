@@ -7,7 +7,7 @@
  tracer←##.Notela.GetTracer'Notela' '0.1.0'
  span←tracer.StartActiveSpan'MainRequest'
  span.SetAttributes('exception.escape' 0)('exception.message' 'DivByZero')
-
+ span.GetAttribute'exc'
  Assert 0≡span.GetAttribute'exception.escape'
  span.End
 ⍝

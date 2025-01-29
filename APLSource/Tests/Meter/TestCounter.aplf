@@ -17,4 +17,5 @@
  Assert 20=mc.sum.(⊃dataPoints).asDouble
  Assert 11=mc.sum.(⊃dataPoints).(⊃attributes).value.intValue
  Assert 'exception.type'≡mc.sum.(⊃dataPoints).(⊃attributes).key
- ⍝
+ counter.Record ⍬
+⍝

@@ -15,5 +15,5 @@
  Assert 5=mg.gauge.(⊃dataPoints).asDouble
  Assert 3=mg.gauge.(⊃dataPoints).(⊃attributes).value.intValue
  Assert 'workspace.used'≡mg.gauge.(⊃dataPoints).(⊃attributes).key
-
+ mm.Record ⍬
  ⍝
