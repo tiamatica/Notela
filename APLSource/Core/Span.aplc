@@ -158,7 +158,7 @@
           :If lookup≤≢_attributes
               r←⊃_attributes[lookup;2]
           :Else
-              2 LogMessage'Attribute [',attr,'] not found'
+              2 logMessage'Attribute [',attr,'] not found'
           :EndIf
       :Else
           logError
