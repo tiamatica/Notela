@@ -1,6 +1,6 @@
  checkAttributes←{
      valid←0 1 3 5∊⍨10|⎕DR¨⍵[;2]
      valid∨←⍵[;2]∊⊂¨'true' 'false'
-     valid∧←~∊1<(⍴⍴)¨⍵[;2]
+     valid∧←1≥≢∘⍴¨⍵[;2]
      {(⌽≠⌽⍵[;1])⌿⍵}valid⌿⍵
  }
