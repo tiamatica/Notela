@@ -1,1 +1,1 @@
- timeUnixNano←{⊂,'I10,K6ZI9'⎕FMT(20 ⎕DT'Z'),⍪(⊃⌽⎕TS)}
+ timeUnixNano←{⎕FR←1287 ⋄ ⊂,'I19'⎕FMT(16 ⎕DT'Z')}
