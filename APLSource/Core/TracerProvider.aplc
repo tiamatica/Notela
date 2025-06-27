@@ -38,7 +38,7 @@
           _resourceSpan←_traces.⎕NS''
           _traces.resourceSpans←,_resourceSpan
           resource←_resourceSpan.(resource←⎕NS'')
-          resource.attributes←toKeyValue/2 2⍴'service.name'cfg.ServiceName'service.version'cfg.ServiceVersion
+          resource.attributes←toKeyValue/cfg.ResourceAttributes⍪2 2⍴'service.name'_cfgServiceName'service.version'_cfgServiceVersion
           _resourceSpan.scopeSpans←⍬
      
           _httpClt←⎕NEW PS.HttpCommand
