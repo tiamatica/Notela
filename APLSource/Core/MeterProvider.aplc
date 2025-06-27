@@ -41,7 +41,7 @@
           _resourceMetric←_metrics.⎕NS''
           _metrics.resourceMetrics←,_resourceMetric
           resource←_resourceMetric.(resource←⎕NS'')
-          resource.attributes←toKeyValue/2 2⍴'service.name'_cfgServiceName'service.version'_cfgServiceVersion
+          resource.attributes←toKeyValue/cfg.ResourceAttributes⍪2 2⍴'service.name'_cfgServiceName'service.version'_cfgServiceVersion
           _resourceMetric.scopeMetrics←⍬
      
           _httpClt←⎕NEW PS.HttpCommand

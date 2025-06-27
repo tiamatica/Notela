@@ -1,4 +1,5 @@
 :Class Configuration
+    :Include Tools
 ⍝ Configuration of OpenTelemetry SDK
 
     :Field Private Instance _batchSize
@@ -7,6 +8,7 @@
     :Field Private Instance _otelHttpUrlLogs
     :Field Private Instance _otelHttpUrlMetrics
     :Field Private Instance _otelHttpUrlTraces
+    :Field Private Instance _resourceAttributes
     :Field Private Instance _serviceName
     :Field Private Instance _serviceVersion
     :Field Private Instance _debug
@@ -14,7 +16,8 @@
     :Field Private Instance _loggers
     :Field Private Instance _exporters
 
-    ∇ make0
+
+    ∇ make0;resAttr
       :Access Public
       :Implements Constructor
       _batchSize←100
@@ -24,6 +27,9 @@
       _otelHttpUrlLogs←(_otelHttpUrl,'v1/logs')getEnv'OTEL_EXPORTER_OTLP_LOGS_ENDPOINT'
       _otelHttpUrlMetrics←(_otelHttpUrl,'v1/metrics')getEnv'OTEL_EXPORTER_OTLP_METRICS_ENDPOINT'
       _otelHttpUrlTraces←(_otelHttpUrl,'v1/traces')getEnv'OTEL_EXPORTER_OTLP_TRACES_ENDPOINT'
+      resAttr←2↑[2]↑'='(≠⊆⊢)¨','(≠⊆⊢)getEnv'OTEL_RESOURCE_ATTRIBUTES'
+      resAttr←'\$\{([^}]*)\}'⎕R{getEnv 2↓¯1↓⍵.Match}¨resAttr
+      _resourceAttributes←checkAttributes resAttr
       _serviceName←getEnv'OTEL_SERVICE_NAME'
       _serviceVersion←getEnv'OTEL_SERVICE_VERSION'
       LogLevel←'info'getEnv'OTEL_LOG_LEVEL'
@@ -124,6 +130,17 @@
         ∇ set ipa
     ⍝TODO: Validate OtelHttpUrlTraces
           _otelHttpUrlTraces←ipa.NewValue
+        ∇
+    :EndProperty
+
+    :Property Simple ResourceAttributes
+    :Access Public
+        ∇ r←get
+          r←_resourceAttributes
+        ∇
+        ∇ set arg;attrm
+          attrm←toKeyValueMatrix arg.NewValue
+          _resourceAttributes←checkAttributes _resourceAttributes⍪attrm
         ∇
     :EndProperty
 
