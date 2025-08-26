@@ -138,12 +138,14 @@
       :Access Public
      ⍝ Returns the context (HTTP header) associated with this Span.
       r←0 2⍴⍬
-      :Trap _cfgDebug↓0
-          r←1 2⍴'traceparent'('00-',traceId,'-',spanId,'-01')
+      :If ⍱/traceId spanId∊⊂''
+          :Trap _cfgDebug↓0
+              r←1 2⍴'traceparent'('00-',traceId,'-',spanId,'-01')
          ⍝r⍪←'tracecontext' ''
-      :Else
-          logError
-      :EndTrap
+          :Else
+              logError
+          :EndTrap
+      :EndIf
     ∇
 
     ∇ r←GetAttribute attr;lookup
