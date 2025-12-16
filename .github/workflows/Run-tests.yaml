@@ -41,7 +41,6 @@ jobs:
 
       - name: Run tests using Docker
         run: >
-          chmod -R 777 ${{ github.workspace }};
           docker run
           -v ${{ github.workspace }}:/app
           -w /app -e DYALOG_SERIAL=${{ secrets.DYALOG_SERIAL }}
@@ -49,5 +48,4 @@ jobs:
           -e GITHUB_TOKEN="${{ github.token }}"
           -e GITHUB_REPOSITORY="${{ github.repository }}"
           -e GITHUB_SHA="${{ github.sha }}"
-          ${{ vars.CONTAINER_REGISTRY }}/dyalog:v190-dotnet;
-          exit $?
+          ${{ vars.CONTAINER_REGISTRY }}/dyalog:v190-dotnet
