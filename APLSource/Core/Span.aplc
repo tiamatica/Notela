@@ -20,7 +20,7 @@
    ⍝ contains an Event name and Event attribute.
 
     :Field Private Instance links←⍬
-    :Field Private Instance isEnded←0
+    :Field Public Instance isEnded←0
     :Field Private Instance scopeSpan←⍬
 
     :Field Private Shared PS←##
