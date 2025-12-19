@@ -2,7 +2,7 @@
 
     ∇ make
       :Access Public
-      :Implements Constructor 
+      :Implements Constructor
     ∇
 
     ∇ r←GetContext
@@ -13,6 +13,11 @@
     ∇ r←GetActiveSpan
       :Implements Method ITracer.GetActiveSpan
       r←⍬
+    ∇
+
+    ∇ {r}←SetActiveSpan span
+      :Implements Method ITracer.SetActiveSpan
+      r←0
     ∇
 
     ∇ span←{context}StartSpan name
@@ -26,4 +31,3 @@
     ∇
 
 :EndClass
-

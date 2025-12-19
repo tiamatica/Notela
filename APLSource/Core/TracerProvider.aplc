@@ -100,6 +100,19 @@
       :EndTrap
     ∇
 
+    ∇ r←SetActiveSpan span
+      :Implements Method ITracerProvider.SetActiveSpan
+     ⍝ Sets the span as active.
+      :Trap _cfgDebug↓0
+          PS.SetActiveSpan span
+          r←0
+      :Else
+          logError
+          r←1
+      :EndTrap
+    ∇
+
+
     ∇ span←{context}StartSpan args;parent;ind;traceId;parentId;spanId;name;create;scopeSpan
       :Implements Method ITracerProvider.StartSpan
      ⍝ Start span without setting it on context.

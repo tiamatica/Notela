@@ -1,0 +1,22 @@
+ TestSetActiveSpan;cfg;tracer;span1;span2;span3;activeSpan
+ ##.Reset
+ cfg←##.Notela.NewConfiguration'TestTraces'
+ cfg.WithExporter'##.TokenExporter'
+ cfg.BatchSize←3
+ ##.Notela.Start cfg
+ tracer←##.Notela.GetTracer'TestTraces'
+ span1←tracer.StartSpan'span1'
+ span2←tracer.StartSpan'span2'
+ tracer.SetActiveSpan span1
+ span3←tracer.StartSpan'span3'
+ activeSpan←tracer.GetActiveSpan
+
+ Assert activeSpan≡span1
+ Assert activeSpan.traceId≡span3.traceId
+ Assert activeSpan.traceId≢span2.traceId
+
+ span1.End
+ span2.End
+ span3.End
+
+ Assert 1=tracer.SetActiveSpan span1

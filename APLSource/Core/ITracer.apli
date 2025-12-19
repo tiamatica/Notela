@@ -5,6 +5,9 @@
     ∇ r←GetActiveSpan
     ∇
 
+    ∇ {r}←SetActiveSpan span
+    ∇
+
     ∇ span←{context}StartSpan name
     ∇
 
