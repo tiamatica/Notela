@@ -15,6 +15,9 @@
     ∇ span←GetActiveSpan
     ∇
 
+    ∇ r←SetActiveSpan span
+    ∇
+
     ∇ span←{context}StartSpan args
     ∇
 

@@ -21,6 +21,17 @@
       r←##.GetActiveSpan
     ∇
 
+    ∇ {r}←SetActiveSpan span
+      :Implements Method ITracer.SetActiveSpan
+      ⍝ Set span as active.
+      ⍝ r: return code (0=success,1=failure)
+      :If span.isEnded
+        r←1
+      :Else
+        r←##.SetActiveSpan span
+      :EndIf
+    ∇
+
     ∇ span←{context}StartSpan name
       :Implements Method ITracer.StartSpan
      ⍝ Create span with name in context.

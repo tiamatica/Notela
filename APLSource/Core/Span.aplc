@@ -20,7 +20,7 @@
    ⍝ contains an Event name and Event attribute.
 
     :Field Private Instance links←⍬
-    :Field Private Instance isEnded←0
+    :Field Private Instance _isEnded←0
     :Field Private Instance scopeSpan←⍬
 
     :Field Private Shared PS←##
@@ -28,8 +28,8 @@
     ∇ make args
       :Access Public
       :Implements Constructor
-      isEnded←0=≢⊃args
-      →isEnded/0
+      _isEnded←0=≢⊃args
+      →_isEnded/0
       (scopeSpan traceId _parentSpanId spanId name _cfgDebug _cfgLogLevel _cfgLoggers)←args
       _startTime←timeUnixNano 0
       ⍝
@@ -41,7 +41,7 @@
           r←_kind
         ∇
         ∇ set ipa
-          →isEnded/0
+          →_isEnded/0
           :Trap _cfgDebug↓0
               :If (⊂ipa.NewValue)∊PS.API.SpanKind.(UNSPECIFIED INTERNAL SERVER CLIENT PRODUCER CONSUMER)
                   _kind←ipa.NewValue
@@ -60,7 +60,7 @@
           r←_statusCode
         ∇
         ∇ set ipa
-          →isEnded/0
+          →_isEnded/0
           :Trap _cfgDebug↓0
               :If (⊂ipa.NewValue)∊PS.API.SpanStatusCode.(OK ERROR)
                   _statusCode←ipa.NewValue
@@ -79,7 +79,7 @@
           r←_statusMessage
         ∇
         ∇ set ipa
-          →isEnded/0
+          →_isEnded/0
           :Trap _cfgDebug↓0
               :If 0=10|⎕DR ipa.NewValue
               :AndIf 1=≡ipa.NewValue
@@ -90,6 +90,13 @@
           :Else
               logError
           :EndTrap
+        ∇
+    :EndProperty
+
+    :Property Simple isEnded
+    :Access Public
+        ∇ r←get
+          r←_isEnded
         ∇
     :EndProperty
 
@@ -182,10 +189,10 @@
     ∇ End;r
       :Access Public
      ⍝ Marks the end of Span execution.
-      →isEnded/0
+      →_isEnded/0
       :Trap _cfgDebug↓0
           _endTime←timeUnixNano 0
-          isEnded←1
+          _isEnded←1
      
           r←scopeSpan.⎕NS''
           r.name←name
