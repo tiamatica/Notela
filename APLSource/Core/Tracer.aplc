@@ -29,7 +29,7 @@
         r←1
       :Else
         r←##.SetActiveSpan span
-      :EndIF
+      :EndIf
     ∇
 
     ∇ span←{context}StartSpan name
